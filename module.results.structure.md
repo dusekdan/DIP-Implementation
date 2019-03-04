@@ -5,18 +5,18 @@ When `get_results()` or similarly named method is called on the module, the retu
 ```json
 {
     "nonparsible" : [
-        {"objectProp' : 'propValue', 'otherProp' : 4},
-        {'objectProp' : 'propValue', 'otherProp' : 2},
+        {"objectProp': 'propValue', 'otherProp': 4},
+        {'objectProp': 'propValue', 'otherProp': 2},
     ],
 
     'parsible' : {
         'preferredProcessorName' => [
-            {'objectX' : 'Value', ...},
-            {'objectX' : 'Value', ...},
+            {'objectX': 'Value', ...},
+            {'objectX': 'Value', ...},
         ],
         'differentProcessorName' => [
-            {'prop': 'xxx', 'prop2', 'xxxy'},
-            {'prop': 'dxd', 'prop2', 'cxc'}
+            {'prop': 'xxx', 'prop2': 'xxxy'},
+            {'prop': 'dxd', 'prop2': 'cxc'}
         ]
     }
 }
