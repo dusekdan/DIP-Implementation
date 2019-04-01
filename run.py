@@ -5,21 +5,26 @@ from core import utils
 from core.module_loader import ModuleLoader
 
 from debugger import DEBUG
-
-modules_folder = "modules"
 DBG = DEBUG(DEBUG_ENABLED=True)
 
-ML = ModuleLoader(modules_folder)
-instantiated_modules = ML.discover_modules()
 
-# DBG.imported_modules()
+MODULES_FOLDER = "modules"
+
+# 1 - Discover modules
+
+ML = ModuleLoader(MODULES_FOLDER)
+instantiated_modules = ML.discover_modules()
 DBG.discovered_modules()
+
+# 2 - Classify modules by its ability to be run
+independent, satisfiable, nonrunnable = ML.classify_modules(instantiated_modules)
+DBG.classified_modules(independent, satisfiable, nonrunnable)
 
 # 3 - Run them via standardized calls (Is this called the API?) 
 # # TODO: Make this follow process flow described in module.loading.strategy.md
-for module_name, instance in instantiated_modules.items():
-    DBG.starting_module(module_name)
-    instance.execute()
+#for module_name, instance in instantiated_modules.items():
+#    DBG.starting_module(module_name)
+#    instance.execute()
 
 
 
