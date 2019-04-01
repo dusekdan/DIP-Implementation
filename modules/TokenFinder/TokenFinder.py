@@ -9,8 +9,16 @@ class TokenFinder():
             }
         ]
     
-    def execute(self):
+    def execute(self, param):
         print(" TokenFinder: Executing...")
+        self.target = param
+        print(" TokenFinder: Finalizing...")
+
+    def get_results(self):
+        return { "dummy":"results" }
     
     def get_dependencies(self):
         return self.dependencies
+    
+    def leaves_phisical_artifacts(self):
+        return False
