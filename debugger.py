@@ -1,61 +1,82 @@
 import sys
+import types
 
-class DEBUG():
+class DEBUG(object):
+
 
     def __init__(self, DEBUG_ENABLED = False):
         self.enabled = DEBUG_ENABLED
 
-    def discovered_modules_DEPRECATED(self, discovered_modules):
-        if (self.enabled):
-            print("[D] Discovered modules:")
-            for module in discovered_modules:
-                print("\t|-> %s" % module)
-    
+
+    def __getattribute__(self, attr):
+        """Prevents methods from executing when DEBUG is disabled."""
+        if object.__getattribute__(self, "enabled"):
+            method = object.__getattribute__(self, attr)
+            if not method:
+                raise Exception("Method %s is not implemented." % attr)
+            return method
+        else:
+            return object.__getattribute__(self, "__empty__")
+
+
+    def __empty__(self, *argv):
+        """Replacement method called instead of actual functional methods when
+        debug is set to False"""
+        pass
+
+
+    def dprint(self, string):
+        """Conditionally executed print function."""
+        if self.enabled:
+            print(string)
+
+
     def discovered_modules(self):
         all_modules = sys.modules.keys()
-        print("[D] Discovered modules:")
+        self.dprint("[D] Discovered modules:")
         for module_name in all_modules:
             if module_name.startswith('modules.') and module_name.count('.') == 1:
-                print("\t|-> %s" % module_name)
+                self.dprint("\t|-> %s" % module_name)
+
 
     def classified_modules(self, independent, satisfiable, nonrunnable):
-        print("[D] Module classification done.")
-        
-        print("  Independent modules: ")
+        self.dprint("[D] Module classification done.")
+
+        self.dprint("  Independent modules: ")
         for module_name, instance in independent.items():
-            print("\t|-> %s" % module_name)
+            self.dprint("\t|-> %s" % module_name)
         
-        print("  Potentially satisfiable modules: ")
+        self.dprint("  Potentially satisfiable modules: ")
         for module_name, instance in satisfiable.items():
-            print("\t|-> %s" % module_name)
+            self.dprint("\t|-> %s" % module_name)
         
-        print("  Non-runnable modules: ")
+        self.dprint("  Non-runnable modules: ")
         for module_name, reason in nonrunnable.items():
-            print("\t|-> %s (%s)" % (module_name, reason))
+            self.dprint("\t|-> %s (%s)" % (module_name, reason))
+
 
     def importing_module(self, module_name):
-        if (self.enabled):
-            print(" Importing module: %s" % module_name)
-    
+        self.dprint(" Importing module: %s" % module_name)
+
+
     def starting_module(self, module_name):
-        if (self.enabled):
-            print(" Attempting to start module: %s" % module_name)
+        self.dprint(" Attempting to start module: %s" % module_name)
+
 
     def imported_modules(self):
-        if (self.enabled):
-            filtered = ['builtins', 'sys', '_frozen_importlib', 
-            '_imp', '_warnings', '_thread', '_weakref', '_frozen_importlib_external',
-            '_io', 'marshal', 'nt', 'winreg', 'zipimport', 'encodings', 'codecs',
-            '_codecs', 'encodings.aliases', 'encodings.utf_8', '_signal', '__main__',
-            'encodings.latin_1', 'io', 'abc', '_weakrefset', 'site', 'os', 'errno', 
-            'stat', '_stat', 'ntpath', 'genericpath', 'os.path', '_collections_abc',
-            '_sitebuiltins', 'sysconfig', '_bootlocale', '_locale', 'encodings.cp1250',
-            'types', 'functools', '_functools', 'collections', 'operator', '_operator',
-            'keyword', 'heapq', '_heapq', 'itertools', 'reprlib', '_collections', 'weakref',
-            'collections.abc', 'encodings.cp437', 'importlib', 'importlib._bootstrap',
-            'importlib._bootstrap_external', 'warnings', 'debugger'
-            ]
-            all_modules = sys.modules.keys()
-            print(
-                list(filter(lambda x: x not in filtered, all_modules))
-            )
+        filtered = ['builtins', 'sys', '_frozen_importlib', 
+        '_imp', '_warnings', '_thread', '_weakref', '_frozen_importlib_external',
+        '_io', 'marshal', 'nt', 'winreg', 'zipimport', 'encodings', 'codecs',
+        '_codecs', 'encodings.aliases', 'encodings.utf_8', '_signal', '__main__',
+        'encodings.latin_1', 'io', 'abc', '_weakrefset', 'site', 'os', 'errno', 
+        'stat', '_stat', 'ntpath', 'genericpath', 'os.path', '_collections_abc',
+        '_sitebuiltins', 'sysconfig', '_bootlocale', '_locale', 'encodings.cp1250',
+        'types', 'functools', '_functools', 'collections', 'operator', '_operator',
+        'keyword', 'heapq', '_heapq', 'itertools', 'reprlib', '_collections', 'weakref',
+        'collections.abc', 'encodings.cp437', 'importlib', 'importlib._bootstrap',
+        'importlib._bootstrap_external', 'warnings', 'debugger'
+        ]
+        all_modules = sys.modules.keys()
+        self.dprint(
+            list(filter(lambda x: x not in filtered, all_modules))
+        )

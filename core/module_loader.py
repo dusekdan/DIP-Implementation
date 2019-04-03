@@ -83,3 +83,10 @@ class ModuleLoader:
             satisfiable[module_name] = instance
 
         return (independent, satisfiable, nonrunnable)
+
+    def show_module_loading_errors(self, errors):
+        """Prints out information about why modules could not be imported/run."""
+        print("\n There are modules that could not be run for the following reasons: ")
+        for module_name, error in errors.items():
+            print(" \tName: %s \tReason: %s" % (module_name, error))
+        print()
