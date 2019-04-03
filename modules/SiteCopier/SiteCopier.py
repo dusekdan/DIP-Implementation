@@ -14,5 +14,5 @@ class SiteCopier():
     def get_results(self):
         return { "dummy":"results" }
 
-    def leaves_phisical_artifacts(self):
+    def leaves_physical_artifacts(self):
         return True

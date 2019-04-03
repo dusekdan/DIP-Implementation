@@ -20,5 +20,5 @@ class TokenFinder():
     def get_dependencies(self):
         return self.dependencies
     
-    def leaves_phisical_artifacts(self):
+    def leaves_physical_artifacts(self):
         return False

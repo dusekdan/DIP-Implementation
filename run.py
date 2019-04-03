@@ -30,7 +30,7 @@ for module_name, instance in independent.items():
     
     exit_flag = instance.execute("https://danieldusek.com")
     results = instance.get_results()
-    physical_artifacts = instance.leaves_phisical_artifacts()
+    physical_artifacts = instance.leaves_physical_artifacts()
     
     module_results[module_name] = {
         "exit_flag": exit_flag,
@@ -64,7 +64,7 @@ while try_again:
         if can_run:
             exit_flag = instance.execute("https://danieldusek.com")
             results = instance.get_results()
-            physical_artifacts = instance.leaves_phisical_artifacts()
+            physical_artifacts = instance.leaves_physical_artifacts()
 
             module_results[module_name] = {
                 "exit_flag": exit_flag,
