@@ -6,6 +6,7 @@ from core.module_loader import ModuleLoader
 
 from debugger import DEBUG
 DBG = DEBUG(DEBUG_ENABLED=True)
+dprint = DBG.dprint
 
 
 MODULES_FOLDER = "modules"
@@ -37,41 +38,47 @@ for module_name, instance in independent.items():
         "left_physical_artifacts": physical_artifacts
     }
 
-    print("[I] Module %s finished and saved results." % module_name)
+    dprint("[I] Module %s finished and saved results." % module_name)
 
-print("[I] Independent run finished.")
+dprint("[I] Independent run finished.")
 
-# 4 - Check whether it is possible to run satisfiably dependent modules
+# 4 - Check and run satisfiably dependent modules
 
-try_again = False
-# TODO: This needs to be wrapped in while loop until try again == False (update the condition)
-for module_name, instance in satisfiable.items():
+try_again = True
+while try_again:
+
+    try_again = False
+
+    for module_name, instance in satisfiable.items():
+        required_dependencies = instance.get_dependencies()
+
+        can_run = True
+        for dependency in required_dependencies:
+            if dependency["depends_on"] not in module_results.keys():
+                dprint("[W] Some modules can not be run. Dependency is not present in module_results.")
+                dprint("\t %s -> %s" % (module_name, dependency["depends_on"]))
+                nonrunnable[module_name] = "Circular or non-existent dependency."
+                can_run = False
+                break
+        
+        if can_run:
+            exit_flag = instance.execute("https://danieldusek.com")
+            results = instance.get_results()
+            physical_artifacts = instance.leaves_phisical_artifacts()
+
+            module_results[module_name] = {
+                "exit_flag": exit_flag,
+                "results": results,
+                "left_physical_artifacts": physical_artifacts
+            }
+
+            try_again = True
     
-    required_dependencies = instance.get_dependencies()
-    
-    can_run = True
-    for dependency in required_dependencies:
-        if dependency["depends_on"] not in module_results.keys():
-            can_run = False
-            print("[W] Some modules can not be run. Dependency is not present in module_results.")
-            print("\t %s -> %s" % (module_name, dependency["depends_on"]))
-            break
-    
-    if can_run:
-        exit_flag = instance.execute("https://danieldusek.com")
-        results = instance.get_results()
-        physical_artifacts = instance.leaves_phisical_artifacts()
+    # Remove modules that were already run (their result is recorded in module_results)
+    for module_name in module_results.keys():
+        satisfiable.pop(module_name, None)
 
-        module_results[module_name] = {
-            "exit_flag": exit_flag,
-            "results": results,
-            "left_physical_artifacts": physical_artifacts
-        }
-
-        try_again = True
-    
-    if try_again == False:
-        print("[W] Some modules can not be run. Maybe there is a circular dependency?")
+ML.show_module_loading_errors(nonrunnable)
 
 
 # 3 - Run them via standardized calls (Is this called the API?) 
@@ -85,11 +92,3 @@ for module_name, instance in satisfiable.items():
 # TODO: X - Optional: Verify loaded modules are in standardized shape (have proper methods etc.)
 # If this todo is not worked in, loading will start to fail once the improperly written modules
 # start to appear. Huge except-catch potential here.
-
-
-
-# Old code fragmets. To be deleted, due 10th April, 2019
-
-# 1 - Obtain existing modules from modules folder.
-#discovered_modules = [m for m in os.listdir(modules_folder) if os.path.isdir(modules_folder + "/" + m)]
-#DBG.discovered_modules(discovered_modules)
