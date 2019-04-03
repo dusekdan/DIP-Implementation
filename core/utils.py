@@ -8,6 +8,7 @@ def generate_run_id():
     time_prefix = now.strftime("%Y-%m-%d_%H%M%S")
     return time_prefix + "_" + get_rnd_string(5)
 
+
 def get_rnd_string(length=10):
     """
     Returns random string composed of uppercase letters of English alphabet
