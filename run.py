@@ -10,6 +10,12 @@ dprint = DBG.dprint
 
 
 MODULES_FOLDER = "modules"
+CURRENT_RUN_ID = utils.generate_run_id()
+sys.CURRENT_RUN_ID = CURRENT_RUN_ID
+
+# TODO: Prepare directory for that run? Also utils responsibility? Or RunHelper?
+os.mkdir("output/%s" % CURRENT_RUN_ID)
+
 
 # 1 - Discover modules
 
@@ -28,7 +34,7 @@ module_results = {}
 
 for module_name, instance in independent.items():
     
-    exit_flag = instance.execute("https://danieldusek.com")
+    exit_flag = instance.execute("https://danieldusek.com/")
     results = instance.get_results()
     physical_artifacts = instance.leaves_physical_artifacts()
     
@@ -79,7 +85,6 @@ while try_again:
         satisfiable.pop(module_name, None)
 
 ML.show_module_loading_errors(nonrunnable)
-
 
 # 3 - Run them via standardized calls (Is this called the API?) 
 # # TODO: Make this follow process flow described in module.loading.strategy.md
