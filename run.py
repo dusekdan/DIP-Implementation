@@ -39,7 +39,7 @@ for module_name, instance in independent.items():
     if physical_artifacts:
         utils.prepare_module_folder(module_name)
 
-    exit_flag = instance.execute("https://danieldusek.com/")
+    exit_flag = instance.execute("https://danieldusek.com")
     results = instance.get_results()
     
     module_results[module_name] = {
