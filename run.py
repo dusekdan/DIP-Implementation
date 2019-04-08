@@ -8,6 +8,7 @@ from debugger import DEBUG
 DBG = DEBUG(DEBUG_ENABLED=True)
 dprint = DBG.dprint
 
+utils.prepare_tool_environment()
 
 MODULES_FOLDER = "modules"
 CURRENT_RUN_ID = utils.generate_run_id()
