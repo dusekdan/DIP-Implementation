@@ -2,6 +2,7 @@ import os, errno
 import string
 import random
 import datetime
+import core.config as cfg
 
 def generate_run_id():
     """Generates unique and timestamped identifier for the tool's run."""
@@ -28,3 +29,10 @@ def prepare_tool_environment():
         if e.errno != errno.EEXIST:
             print("[ERROR] Unable to create 'output' directory. Do you have sufficient rights to write in this location?")
             raise
+
+def prepare_module_folder(module_name):
+    try:
+        os.makedirs("output/%s/%s" % (cfg.CURRENT_RUN_ID, module_name))
+        print("[I] %s module output directory created." % module_name)
+    except OSError:
+        print("[ERROR] Unable to create output directory for %s module!" % module_name)

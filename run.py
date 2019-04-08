@@ -1,6 +1,7 @@
 import os
 import sys
 import importlib
+import core.config as cfg
 from core import utils 
 from core.module_loader import ModuleLoader
 
@@ -9,10 +10,9 @@ DBG = DEBUG(DEBUG_ENABLED=True)
 dprint = DBG.dprint
 
 utils.prepare_tool_environment()
-
 MODULES_FOLDER = "modules"
 CURRENT_RUN_ID = utils.generate_run_id()
-sys.CURRENT_RUN_ID = CURRENT_RUN_ID
+cfg.CURRENT_RUN_ID = CURRENT_RUN_ID
 
 # TODO: Prepare directory for that run? Also utils responsibility? Or RunHelper?
 os.mkdir("output/%s" % CURRENT_RUN_ID)
@@ -35,15 +35,19 @@ module_results = {}
 
 for module_name, instance in independent.items():
     
+    physical_artifacts = instance.leaves_physical_artifacts()
+    if physical_artifacts:
+        utils.prepare_module_folder(module_name)
+
     exit_flag = instance.execute("https://danieldusek.com/")
     results = instance.get_results()
-    physical_artifacts = instance.leaves_physical_artifacts()
     
     module_results[module_name] = {
         "exit_flag": exit_flag,
         "results": results,
         "left_physical_artifacts": physical_artifacts
     }
+    
 
     dprint("[I] Module %s finished and saved results." % module_name)
 

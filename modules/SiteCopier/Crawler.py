@@ -7,6 +7,8 @@ from urllib.parse import urljoin
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
+import core.config as cfg
+
 class Crawler():
 
 
@@ -62,8 +64,9 @@ class Crawler():
         try:
             req = self._retry_session().get(target)
             self.process_response(req)
-        except Exception:
+        except Exception as x:
             print("Request to %s failed after retrying. Adding to failed requests." % target)
+            print(x)
             self.requests_failed.append(target)
 
 
@@ -102,7 +105,7 @@ class Crawler():
 class Storer():
 
     def __init__(self):
-        self.output_dir = "output/%s" % sys.CURRENT_RUN_ID
+        self.output_dir = "output/%s/SiteCopier/" % cfg.CURRENT_RUN_ID
         self.text_content_types = [
             "text/plain", "text/html"
         ]
