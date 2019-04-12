@@ -37,7 +37,7 @@ class Crawler():
         """
         TODO: Allow setting options for the crawler (probably based on reading 
         the module config).
-        - Sleep length customization
+        - Sleep length customization (currently 0.2)
         - File size download
         - 
         """
@@ -91,7 +91,7 @@ class Crawler():
 
         except Exception as x:
             print("Request to %s failed after retrying. Adding to failed requests." % target)
-            print(x)
+            print(repr(x))
             self.requests_failed.append(target)
 
 
@@ -109,9 +109,11 @@ class Crawler():
         content_type = utils.extract_mime_type(headers['Content-Type'])
         
         if utils.is_binary_mime_type(content_type):
-            if headers['Content-Length'] > request_size_treshold:
+            if 'Content-Length' not in headers:
                 return False
-        
+
+            if int(headers['Content-Length']) > request_size_treshold:
+                return False
         return True
 
 
@@ -119,23 +121,39 @@ class Crawler():
         """
         Distributes responsibilities for processing the response.
         """
-        # Extract links and add them into the queue
-        # - Requires BeautifulSoap
-        # - TODO (will need to extend this to understand link contexts)
         self.storer.store(target, response, self.current_request_number)
 
         # TODO: Add handling for other link_group members.
-        # - Needs to use all of the members of link_group (and filter them appropriately)
-        # - Write methods to filter specific link groups (e.g. for css/scripts to be downloaded even if outside the scope)
+        # TODO: Add handling of link extraction for other content-types.
+        content_type = utils.extract_mime_type(
+            response.headers['Content-Type']
+        ).lower()
 
-        content_type = utils.extract_mime_type(response.headers['Content-Type'])
         if not utils.is_binary_mime_type(content_type):
-            link_group = self.extract_links(content_type, response.text)
-            self.process_a_links(link_group['a'])
-            self.process_resource_links(link_group['link'])
-            #print(a)
+            if content_type == 'text/html':
+
+                link_group = self.extract_links_from_html(response.text)
+                self.process_a_links(link_group['a'])
+                self.process_resource_links(link_group['link'])
+
+            elif content_type == 'text/css':
+
+                self.mprint("No link parsers for CSS files implemented yet.")
+
+            elif (
+                content_type == 'application/javascript'
+                or content_type == 'application/json'
+            ):
+
+                self.mprint("No link parsers for JS/JSON files implemented yet.")
+
+            else:
+
+                self.mprint("Content-Type %s has no parsers.")
+
         else:
-            print("Response was binary.")
+
+            self.mprint("Response is binary, no links will be extracted.")
 
 
     def process_resource_links(self, link_group):
@@ -161,6 +179,68 @@ class Crawler():
                 self.add_to_filtered(link)
 
 
+    def extract_links_from_html(self, body):
+        """
+        Extracts links from various elements and returns them in given context.
+        """
+        soup = BeautifulSoup(body, 'html.parser')
+        # A-group
+        # Done: a, (frame - not tested)
+        # TODO: iframe (watch out: they have other attrs than src)
+        a = soup.find_all('a')
+        a_urls = [link.get('href') for link in a if link != None]
+        
+        frame = soup.find_all('frame')
+        frame_urls = [link.get('src') for link in frame if link != None] + [
+            link.get('longdesc') for link in frame if link != None]
+
+        # Media-group
+        # Done: img
+        # TODO: applet, audio, video, track
+        img = soup.find_all('img')
+        img_urls = [url.get('src') for url in img if url != None]
+        
+        # Link-group
+        # Done: link, script
+        links = soup.find_all('link')
+        link_urls = [url.get('href') for url in links if url != None]
+        scripts = soup.find_all('script')
+        script_urls = [url.get('src') for url in scripts if url != None]
+
+        return { 'a': a_urls + frame_urls, 'media': img_urls, 'link': link_urls + script_urls }
+
+
+    def extract_links_from_css(self, body):
+        """
+        TODO: Prepared for implementation at later date.
+        """
+        pass
+
+
+    def extract_links_from_js(self, body):
+        """
+        TODO: Preared for implementation at later date.
+        """
+        pass
+
+
+    def apply_basic_link_target_filtering(self, link_group):
+        """
+        Algorithmically gets rid of undesirable link targets, as follows:
+            - (1) Filter out empty, fragments-only and None links
+            - (2) Normalize, Absolutize, Defragmentize
+            - (3) Remove duplicates
+            TODO: (4) Order query string parameters alphabetically.
+        """
+        return list(set([
+            self.URLHelper.normalize(
+                self.URLHelper.remove_fragment(
+                    self.URLHelper.absolutize(self.target, link)
+                ))  for link in link_group 
+                    if link != None and not link.startswith('#') and link != ''
+        ]))
+    
+    
     def add_to_queue(self, address):
         """
         Conditional adding to the queue. If the given url is present in either
@@ -181,63 +261,6 @@ class Crawler():
         if address not in self.requests_filtered_out:
             self.mprint("Link %s is external. Filtering out." % address)
             self.requests_filtered_out.append(address)
-            
-
-
-    def extract_links(self, content_type, body):
-        """
-        Extract links from various elements depending on the content type from
-        which the body comes from.
-
-        TODO: Implement link processing for other mime-types.
-        """
-        if content_type == 'text/html':
-
-            soup = BeautifulSoup(body, 'html.parser')
-
-            # Four main groups: 'a', 'media', 'links' and 'forms'
-            
-            # A-group
-            # Done: a
-            # TODO: frame, iframe (watch out: they have other attrs than src)
-            a = soup.find_all('a')
-            a_urls = [link.get('href') for link in a if link != None]
-
-            # Media-group
-            # Done: img
-            # TODO: applet, audio, video, track
-            img = soup.find_all('img')
-            img_urls = [url.get('src') for url in img if url != None]
-
-            # Link-grop
-            # Done: link, script
-            links = soup.find_all('link')
-            link_urls = [url.get('href') for url in links if url != None]
-            scripts = soup.find_all('script')
-            script_urls = [url.get('src') for url in scripts if url != None]
-
-            return { 'a': a_urls, 'media': img_urls, 'link': link_urls + script_urls }
-        elif content_type == 'text/css':
-            return {}
-        else:
-            return {} # just regex it
-
-
-    def apply_basic_link_target_filtering(self, link_group):
-        """
-        Algorithmically gets rid of undesirable link targets, as follows:
-            - (1) Filter out empty, fragments-only and None links
-            - (2) Normalize, Absolutize, Defragmentize
-            - (3) Remove duplicates
-            TODO: (4) Order query string parameters alphabetically.
-        """
-        return list(set([
-            self.URLHelper.normalize(
-                self.URLHelper.remove_fragment(
-                    self.URLHelper.absolutize(self.target, link)
-                ))  for link in link_group 
-                    if link != None and not link.startswith('#') and link != ''
-        ]))
 
 
     def _retry_session(self, 
@@ -260,6 +283,7 @@ class Crawler():
         session.mount('https://', adapter)
         
         return session
+
 
 class Storer():
     """
@@ -327,9 +351,9 @@ class Storer():
             try: 
                 with open(response_body_file, 'w', encoding=charset) as f:
                     f.write(response.text)
-            except Exception as e:
+            except LookupError as e:
                 # If that fails, save as binary content
-                print("[ERROR][R:%s] Text response writting in server-provided encoding error: %s" % (id, e))
+                # DBG: print("[ERROR][R:%s] Text response writting in server-provided encoding error: %s" % (id, e))
                 try:
                     with open(response_body_file, 'wb') as f:
                         f.write(response.content)

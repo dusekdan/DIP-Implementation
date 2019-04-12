@@ -72,7 +72,7 @@ def extract_charset(content_type_header_value):
     return "unknown"
 
 
-def is_binary_mime_type(type):
+def is_binary_mime_type(c_type):
     """
     Based on a very brief white-list decides whether mime type is textual
     or binary.
@@ -80,17 +80,15 @@ def is_binary_mime_type(type):
     TODO: Broaden this after consulting:
      - http://www.iana.org/assignments/media-types/media-types.xhtml
     """
-    is_binary = True
-
-    if type.split('/')[0] == 'text':
-        is_binary = False
+    if c_type.split('/')[0] == 'text':
+        return False
 
     recognized_textual_types = [
-        'text/html', 'text/plain', 'text/css', 'application/json'
+        'text/html', 'text/plain', 'text/css', 'application/json',
         'application/javascript', 'application/jwt', 'application/xml'
     ]
 
-    if type in recognized_textual_types:
-        is_binary = False
+    if c_type in recognized_textual_types:
+        return False
 
-    return is_binary
+    return True
