@@ -93,7 +93,8 @@ class Crawler():
             print("Request to %s failed after retrying. Adding to failed requests." % target)
             print(x)
             self.requests_failed.append(target)
-    
+
+
     def should_request(self, headers):
         """
         Based on the HEAD response headers decide whether to send a request or
@@ -123,41 +124,41 @@ class Crawler():
         # - TODO (will need to extend this to understand link contexts)
         self.storer.store(target, response, self.current_request_number)
 
-        # TODO: Refactor this method hard
+        # TODO: Add handling for other link_group members.
         # - Needs to use all of the members of link_group (and filter them appropriately)
         # - Write methods to filter specific link groups (e.g. for css/scripts to be downloaded even if outside the scope)
 
         content_type = utils.extract_mime_type(response.headers['Content-Type'])
         if not utils.is_binary_mime_type(content_type):
             link_group = self.extract_links(content_type, response.text)
-
-            # Remove fragments & None/empty stubs
-            a = [
-                link for link in link_group['a'] 
-                if link != None 
-                and not link.startswith('#') 
-                and link != ''
-            ]
-
-            # - Normalize it, absolutize it and put into the request queue (condition on whether it already is there)
-            a = [self.URLHelper.absolutize(self.target, link) for link in a]
-
-            a = [self.URLHelper.remove_fragment(link) for link in a]
-
-            a = [self.URLHelper.normalize(link) for link in a]
-
-            # Remove dupes
-            a = list(set(a))
-
-            for link in a:
-                if self.URLHelper.is_in_scope(self.target, link):
-                    self.add_to_queue(link)
-                else:
-                    self.add_to_filtered(link)
-
+            self.process_a_links(link_group['a'])
+            self.process_resource_links(link_group['link'])
             #print(a)
         else:
             print("Response was binary.")
+
+
+    def process_resource_links(self, link_group):
+        """
+        Proccesses targets of 'link' and 'script' tags and loads them up
+        into the queues accordingly. All external and internal links are
+        scheduled for request.
+        """
+        for link in self.apply_basic_link_target_filtering(link_group):
+            self.add_to_queue(link)
+
+
+    def process_a_links(self, link_group):
+        """
+        Loads desired 'a' link targets up into the request or filtered request
+        queue. All external 'a' links are filtered out, fragments are removed
+        and local URLs are kept.
+        """
+        for link in self.apply_basic_link_target_filtering(link_group):
+            if self.URLHelper.is_in_scope(self.target, link):
+                self.add_to_queue(link)
+            else:
+                self.add_to_filtered(link)
 
 
     def add_to_queue(self, address):
@@ -220,7 +221,25 @@ class Crawler():
             return {}
         else:
             return {} # just regex it
-    
+
+
+    def apply_basic_link_target_filtering(self, link_group):
+        """
+        Algorithmically gets rid of undesirable link targets, as follows:
+            - (1) Filter out empty, fragments-only and None links
+            - (2) Normalize, Absolutize, Defragmentize
+            - (3) Remove duplicates
+            TODO: (4) Order query string parameters alphabetically.
+        """
+        return list(set([
+            self.URLHelper.normalize(
+                self.URLHelper.remove_fragment(
+                    self.URLHelper.absolutize(self.target, link)
+                ))  for link in link_group 
+                    if link != None and not link.startswith('#') and link != ''
+        ]))
+
+
     def _retry_session(self, 
         retries = 5, 
         backoff_factor = 0.3, 
