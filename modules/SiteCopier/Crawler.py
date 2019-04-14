@@ -423,8 +423,7 @@ class URLHelper():
         # www.domain.com / domain.com (missing protocol)
         # -> Check if left-hand prefix of netloc is the same, if yes, 
         # append protocol
-        # TODO: Future (skip this at the moment, because this is not how 
-        # URL should be written)
+        # FUTURE: skip this at the moment, because this is not how URL should be written
         #if url_parts.netloc.startswith(self.remove_trailing_slash(url)):
 
         # /relative/address (relative address from the root)

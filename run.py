@@ -9,13 +9,9 @@ from debugger import DEBUG
 DBG = DEBUG(DEBUG_ENABLED=True)
 dprint = DBG.dprint
 
-utils.prepare_tool_environment()
 MODULES_FOLDER = "modules"
-CURRENT_RUN_ID = utils.generate_run_id()
-cfg.CURRENT_RUN_ID = CURRENT_RUN_ID
-
-# TODO: Prepare directory for that run? Also utils responsibility? Or RunHelper?
-os.mkdir("output/%s" % CURRENT_RUN_ID)
+cfg.CURRENT_RUN_ID = utils.generate_run_id()
+utils.prepare_tool_environment(cfg.CURRENT_RUN_ID)
 
 
 # 1 - Discover modules

@@ -22,7 +22,7 @@ def get_rnd_string(length=10):
     return ''.join(random.choice(characters) for _ in range(length))
 
 
-def prepare_tool_environment():
+def prepare_tool_environment(run_id):
     """
     Executes necessary preparation actions for the tool run.
 
@@ -30,13 +30,22 @@ def prepare_tool_environment():
         - Creation of 'output' directory under project root
         - ...
     """
-    # Output folder must exist
+    # Ensure 'output' folder exists.
     try:
         os.makedirs("output")
         print("[I] Output directory did not exist and was created. Is this your first rodeo?")
     except OSError as e:
         if e.errno != errno.EEXIST:
             print("[ERROR] Unable to create 'output' directory. Do you have sufficient rights to write in this location?")
+            raise
+
+    # Create 'output/run_id' folder.
+    try:
+        os.makedirs(os.path.join("output", run_id))
+        print("[I] Run directory %s created." % run_id)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            print("[ERROR] Unable to create 'output/%s' directory for current run. Do you have sufficient rights to write in this location?")
             raise
 
 
