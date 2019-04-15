@@ -69,6 +69,7 @@ while try_again:
                 break
         
         if can_run:
+            instance.provide_results(module_results)
             exit_flag = instance.execute("https://danieldusek.com")
             results = instance.get_results()
             physical_artifacts = instance.leaves_physical_artifacts()
