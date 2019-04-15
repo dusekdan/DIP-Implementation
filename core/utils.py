@@ -118,3 +118,6 @@ def is_binary_mime_type(c_type):
         return False
 
     return True
+
+def get_rid_of_windows_nl(response):
+    pass
