@@ -14,11 +14,9 @@ class SiteCopier():
         self.mprint("===================================%s===================================" % self.module_name)
         self.mprint("Target acquired: %s" % param)
 
-
         self.crawler.set_target(param)
-        crawling_output = self.crawler.crawl()
-        self.mprint("Crawler work finished. %s" % crawling_output)
-
+        self.parsible_artifacts = self.crawler.crawl()
+        self.mprint("Crawler work finished.")
 
         self.mprint("===================================%s===================================" % self.module_name)
 
@@ -26,7 +24,12 @@ class SiteCopier():
         return self.dependencies
 
     def get_results(self):
-        return { "dummy":"results" }
+        return {
+            "nonparsible": [],
+            "parsible": {
+                'anyProcessor': self.parsible_artifacts
+            }
+        }
 
     def leaves_physical_artifacts(self):
         return True

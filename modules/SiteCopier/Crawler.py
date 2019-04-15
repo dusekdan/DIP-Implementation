@@ -71,7 +71,11 @@ class Crawler():
             self.mprint("Number of requests failed: %s" % len(self.requests_failed))
             sleep(0.2)
 
-        return "Crawling done"
+        return [{
+            "crawledUrls": self.requests_done,
+            "failedUrls": self.requests_failed,
+            "filteredUrls": self.requests_filtered_out 
+            }]
 
 
     def issue_request(self, target):
