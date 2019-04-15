@@ -4,6 +4,7 @@ import random
 import datetime
 import core.config as cfg
 
+EMPTY_STRING = ""
 
 def generate_run_id():
     """Generates unique and timestamped identifier for the tool's run."""
@@ -79,6 +80,22 @@ def extract_charset(content_type_header_value):
             charset_part = charset_part[1][:-1]
         return charset_part[1]
     return "unknown"
+
+def get_charset_from_headers_file(headers_file):
+    """
+    Retrieves charset value from provided headers file if the charset was 
+    specified in 'Content-Type' header. Returns None if it was not.
+    """
+    try:
+        with open(headers_file, 'r') as f:
+            for line in f.readlines():
+                if line.startswith('Content-Type'):
+                    charset = extract_charset(line.split(':')[1])
+                    if charset != "unknown":
+                        return charset
+        return None
+    except IOError:
+        print("[ERROR][Utils] Could not read %s file. Does it exist? Do you have sufficient rights?" % headers_file)
 
 
 def is_binary_mime_type(c_type):

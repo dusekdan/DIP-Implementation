@@ -329,7 +329,7 @@ class Storer():
                 # FUTURE: Request headers tampering is implemented
 
             with open(response_headers_file, 'w') as f:
-                f.write(str(response.headers))
+                f.write(self.format_headers(response.headers))
         except IOError as e:
             print("[ERROR][R:%s] Writing request/response headers failed." % id)
             print(e)
@@ -359,6 +359,19 @@ class Storer():
                         f.write(response.content)
                 except IOError as e:
                     print("[ERROR][R:%s] Response writting as binary failed too: %s" % (id, e))
+
+
+    def format_headers(self, header_dict):
+        """
+        Translates headers dictionary returned from requests into HTTP-like 
+        header file (one header field per line, standard NAME: Value style)
+        """
+        header_string = ""
+        for header, value in header_dict.items():
+            header_string += "%s: %s\n" % (header, value)
+        
+        return header_string
+
 
 
 class URLHelper():
