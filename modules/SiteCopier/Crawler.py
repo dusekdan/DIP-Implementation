@@ -1,5 +1,6 @@
 import os
 import sys
+import random
 import requests 
 import core.utils as utils
 import core.config as cfg
@@ -25,6 +26,8 @@ class Crawler():
         self.requests_failed = []
         self.requests_filtered_out = []
         self.requests_queue = []
+
+        self.TOTAL_REQUESTS_LIMITATION = 10000
 
 
     def set_target(self, target):
@@ -54,15 +57,20 @@ class Crawler():
         Crawls the target web application starting from the specified entry point.
         """
         while len(self.requests_queue) != 0:
-            # Make a request on the first request in the queue
-            target = self.requests_queue[0]
+            # Make a request on the last (first if single) request in the queue
+            target = self.requests_queue.pop()
+            self.current_target = target
             self.mprint("Requesting: %s" % target)
             
             self.issue_request(target)
             
             # Move finished requests to "requests done"
-            self.requests_done.append(self.requests_queue.pop(0))
+            self.requests_done.append(target)
             self.current_request_number += 1
+
+            # Shuffle the array to decrease chances of processing the very same
+            # kind of a request (randomly smaller looping chance).
+            random.shuffle(self.requests_queue)
 
             # Execution will continue as long as there is a request in the queue
             self.mprint("Number of requests done: %s" % len(self.requests_done))
@@ -70,6 +78,14 @@ class Crawler():
             self.mprint("Number of requests filtered: %s" % len(self.requests_filtered_out))
             self.mprint("Number of requests failed: %s" % len(self.requests_failed))
             sleep(0.2)
+
+            # Prevent infinite looping in e.g. calendar app by hard limiting 
+            # total number of requests.
+            if self.TOTAL_REQUESTS_LIMITATION == len(self.requests_done):
+                self.mprint(
+                "TOTAL_REQUESTS_LIMITATION (%s) REACHED" % self.TOTAL_REQUESTS_LIMITATION
+                )
+                break
 
         return [{
             "crawledUrls": self.requests_done,
@@ -254,7 +270,8 @@ class Crawler():
         if (address not in self.requests_done 
             and address not in self.requests_filtered_out 
             and address not in self.requests_failed
-            and address not in self.requests_queue):
+            and address not in self.requests_queue
+            and address != self.current_target):
             self.requests_queue.append(address)
 
 
@@ -263,7 +280,6 @@ class Crawler():
         Adds request to the filtered queue, if it was not there already.
         """
         if address not in self.requests_filtered_out:
-            self.mprint("Link %s is external. Filtering out." % address)
             self.requests_filtered_out.append(address)
 
 
