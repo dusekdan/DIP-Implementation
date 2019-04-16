@@ -1,0 +1,17 @@
+go
+goto
+return
+returnurl
+return_to
+redir
+redirect
+redirecturl
+redirect_to
+url
+link
+exit
+exitpage
+fromurl
+fromuri
+next
+newurl
