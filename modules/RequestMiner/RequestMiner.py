@@ -57,9 +57,8 @@ class RequestMiner():
         source = os.path.join("output", cfg.CURRENT_RUN_ID, "SiteCopier")
         for id in range(len(os.listdir(source))):
             url = self.obtain_id_url(id)
-            # TODO: uncomment this - commented out only for testing on dd.com
-            #if not self.URLHelper.is_in_scope(self.target, url):
-            #    continue
+            if not self.URLHelper.is_in_scope(self.target, url):
+                continue
             response = os.path.join(source, str(id), "%s.response" % id)
             headers = "%s.headers" % response
 
@@ -83,7 +82,7 @@ class RequestMiner():
             "Initializing parameter mining: %s" % pd_target
         )
         discovered_ps, reflected_ps = self.discover_hidden_url_parameters(pd_target)
-        self.mprint("Discovered params: %s | Reflecting params: %s" % (len(discovered_ps, reflected_ps)))
+        self.mprint("Discovered params: %s | Reflecting params: %s" % (len(discovered_ps), len(reflected_ps)))
 
 
         # ! Find hidden Headers
