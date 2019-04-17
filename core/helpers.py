@@ -1,5 +1,6 @@
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 from requests.models import PreparedRequest
+from collections import OrderedDict
 
 class URLHelper():
     """
@@ -130,3 +131,27 @@ class URLHelper():
             parts.scheme + "://" + parts.netloc + parts.path, query_dict
         )
         return req.url
+
+
+    def order_query_string_params(self, url):
+        """
+        Orders query string parameters alphabetically. E.g. for:
+        |-> Translates https://domain.test/?z=1&b=2&a=3&d=4&e=4
+        |-> To         https://domain.test/?a=3&b=2&d=4&e=4&z=1
+
+        When multiple parameters of the same name have different values, these
+        will also be sorted (in an ascending order).
+        """
+        parts = urlparse(url)
+        params = parse_qs(parts.query)
+        params_ordered = OrderedDict()
+
+        for key in sorted(list(params.keys())):
+            params_ordered[key] = sorted(params[key])
+        
+        r = PreparedRequest()
+        r.prepare_url(
+            parts.scheme + "://" + parts.netloc + parts.path, params_ordered
+        )
+
+        return r.url
