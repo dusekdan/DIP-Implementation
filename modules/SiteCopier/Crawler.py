@@ -248,14 +248,15 @@ class Crawler():
         Algorithmically gets rid of undesirable link targets, as follows:
             - (1) Filter out empty, fragments-only and None links
             - (2) Normalize, Absolutize, Defragmentize
-            - (3) Remove duplicates
-            TODO: (4) Order query string parameters alphabetically.
+            - (3) Order query string parameters alphabetically
+            - (4) Remove duplicates
         """
         return list(set([
             self.URLHelper.normalize(
-                self.URLHelper.remove_fragment(
-                    self.URLHelper.absolutize(self.target, link)
-                ))  for link in link_group 
+                self.URLHelper.order_query_string_params(
+                    self.URLHelper.remove_fragment(
+                        self.URLHelper.absolutize(self.target, link)
+                ))) for link in link_group 
                     if link != None and not link.startswith('#') and link != ''
         ]))
     
