@@ -153,5 +153,26 @@ class URLHelper():
         r.prepare_url(
             parts.scheme + "://" + parts.netloc + parts.path, params_ordered
         )
-
         return r.url
+
+
+    def add_query_string_param(self, url, param, value):
+        """Adds provided parameter and values to the url as query string."""
+        req = PreparedRequest()
+        req.prepare_url(url, {param: value})
+        return req.url
+
+
+    def remove_query_string_param(self, url, param):
+        """Removes query string parameter by name."""
+        parts = urlparse(url)
+        params = parse_qs(parts.query)
+        
+        if param in params:
+            params.pop(param)
+        
+        req = PreparedRequest()
+        req.prepare_url(
+            parts.scheme + "://" + parts.netloc + parts.path, params
+        )
+        return req.url
