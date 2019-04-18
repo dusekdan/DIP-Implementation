@@ -53,7 +53,7 @@ class RequestMiner():
         self.mprint("===================================%s===================================" % self.module_name)
         self.target = param
 
-        self.mprint("Seaching for used query string parameters & headers...")
+        # Existing parameters & headers discovery
         source = os.path.join("output", cfg.CURRENT_RUN_ID, "SiteCopier")
         for id in range(len(os.listdir(source))):
             url = self.obtain_id_url(id)
@@ -64,16 +64,16 @@ class RequestMiner():
 
             # Existing Parameter Discovery
             params = parse_qs(urlparse(url).query, keep_blank_values=True)
-            self.mprint(
-            "Discovered %s new parameters." % self.add_discovered_params(url, params)
-            )
+            self.add_discovered_params(url, params)
 
             # Existing Header Discovery
             discovered_headers = self.filter_common_headers(
             self.discover_headers(headers))
-            self.mprint(
-            "Discovered %s new headers." % self.add_discovered_headers(discovered_headers)
-            )
+            self.add_discovered_headers(discovered_headers)
+
+        self.mprint("%s parameters & %s headers detected." % (
+            len(self.discovered_params), len(self.discovered_headers)
+        ))
 
 
         # Find hidden URL parameters
@@ -84,13 +84,9 @@ class RequestMiner():
         discovered_ps, reflected_ps = self.discover_hidden_url_parameters(pd_target)
         self.mprint("Discovered params: %s | Reflecting params: %s" % (len(discovered_ps), len(reflected_ps)))
 
+        # FUTURE: Find hidden Headers
 
-        # ! Find hidden Headers
-        # TODO: Fuzz discover headers
-
-
-        # Go through the existing URL parameters and figure out whether some of
-        # them are reflected into the response.
+        # Detect existing url parameter reflections.
         for param_name, param_record in self.discovered_params.items():
             reflections = self.test_parameter_reflection(param_name, param_record)
             if reflections:
@@ -101,12 +97,10 @@ class RequestMiner():
             else:
                 self.mprint("Nope, Param %s does not reflect." % param_name)
 
-
         # FUTURE: Evaluate security standing for discovered headers (will require
-        # keeping values of the headers (not currently doing that... aaah))
+        # keeping values of the headers (not currently doing that... aaah) - or
+        # maybe calling securityheaders.com instead?)
         # Maybe this functionality will fit better under SSL eval module?
-        
-        # TODO: Check reflections Headers
         
         self.mprint("Request mining completed....")
         self.mprint("===================================%s===================================" % self.module_name)
@@ -167,7 +161,6 @@ class RequestMiner():
         discovered parameters & list of reflective parameters.
 
         FUTURE: Calculate the difference between .text responses and reflect it in the indicator. 
-        TODO: Think more about how to stop parameter mining when everything is reflecting.
         """
         reflected_params = []
         discovered_params = []
@@ -175,7 +168,6 @@ class RequestMiner():
         for url in urls:
             try:
                 r = self._retry_session().get(url)
-                self.mprint("Requesting: %s" % url)
                 # Indicators of whether parameter has any effect
                 # [code, headers, text], forEach x, x € [0, 0.5, 1]
                 indicators = [
@@ -193,37 +185,34 @@ class RequestMiner():
                     len(r.text), len(ref_ok["text"]), len(ref_pne["text"]))
                 ]
 
-                print("Indicators: %s" % indicators)
-
                 # Look for canaries & responsible parameters
                 if sum(indicators) > 0:
                     self.mprint("Found something... will try to pinpoint the parameter.")
-                    effective_params = self.identify_parameter2(url, ref_ok, ref_pne)
+                    effective_params = self.identify_parameter(url, ref_ok, ref_pne)
                     if effective_params:
                         discovered_params += effective_params
 
                     for name, value in canaries.items():
                         if value in r.text:
-                            self.mprint("%s was in the text. Adding %s" % (value, name))
                             reflected_params.append(name)
 
-                    self.mprint("Discovered: %s" % discovered_params)
-                    self.mprint("Reflections: %s" % reflected_params)
-                
                 sleep(self.DELAY)
+
             except requests.exceptions.RequestException as e:
                 self.mprint("[ERROR][Discovery] Mining request failed (%s). Mining ops terminated." % e)
                 break
             
+            # If first run-through discovers too many reflected parameters, all
+            # of the parameters are likely reflected.
             if run_through == 0 and len(discovered_params) > 25:
-                self.mprint("INFO: Everything is probably reflecting. Stopping mining operations.")
+                self.mprint("Detecting too many reflections. Probably everything is reflected.")
                 break
             run_through += 1
 
         return {"reflected": reflected_params, "discovered": discovered_params}
 
 
-    def identify_parameter2(self, url, ok, notok):
+    def identify_parameter(self, url, ok, notok):
         """
         Identifies parameters in URL that are responsible for detected changes
         in the way target application replies. Request heavy and calls it off
@@ -238,7 +227,6 @@ class RequestMiner():
 
         for _ in range(len(added_params)):
             to_append = random.choice(added_params)
-            self.mprint("Trying the %s parameter." % to_append)
             appended = self.URLHelper.add_query_string_param(
                 self.urlparam_startpage_heuristics(), 
                 to_append, utils.get_rnd_string()
@@ -268,13 +256,12 @@ class RequestMiner():
         return effective_params
 
 
-    def identify_parameter(self, url, ok, notok):
+    def identify_parameter_OBSOLETE(self, url, ok, notok):
         """
         Identifies which of the parameters in URL is responsible for detected
         change in the way target application replied. Kinda request heavy.
         FUTURE: Figure how to do this efficiently with interval splitting.
         FUTURE: Make it work / Use strip_tags()-like logic to compare plaintext.
-        FUTURE: Obsolete/refactor/replace this 
         """
         # Intersection of params in URL and params from our parameter list.
         added_params = list(
@@ -285,7 +272,6 @@ class RequestMiner():
         to_remove = random.choice(added_params)
 
         for _ in range(len(added_params)):
-            self.mprint("Trying the %s parameter." % to_remove)
             removed = self.URLHelper.remove_query_string_param(url, to_remove)
             try:
                 r = self._retry_session().get(removed)
@@ -310,7 +296,6 @@ class RequestMiner():
                 added_params.remove(to_remove)
                 if len(added_params) != 0:
                     to_remove = random.choice(added_params)
-
 
                 sleep(self.DELAY)
 
@@ -341,7 +326,7 @@ class RequestMiner():
     def prepare_param_discovery_urls(self, base_url):
         """
         For given URL generates bunch of parameter discovery URLs with 
-        canaries and returns both of them back.
+        canaries and returns this information back.
         """
         PARAM_SEP_LEN = 2 ; CANARY_LEN = self.CANARY_LENGTH
         url_len = len(base_url)
@@ -386,16 +371,15 @@ class RequestMiner():
         """
         Select which URL will be used as a base URL against which the query 
         parameters discovery will be executed.
-        FUTURE: Selection heuristics cab be influenced by the set_options
+        FUTURE: Selection heuristics can be influenced by the set_options
         Available heuristics:
         - (A) Base URL (main page)
-        - (B) Page with the highest amount of query parameters
+        - (B) Page with the highest amount of query parameters (NotImplemented)
         """
         if self.URLPARAM_DISCOVERY_HEURISTICS == "START_PAGE":
             return self.target
-        
-        if self.URLPARAM_DISCOVERY_HEURISTICS == "MOST_PARAMS":
-            return self.target # TODO: Figure out how to detect this page.
+        else:
+            return self.target
 
 
     def test_parameter_reflection(self, parameter_name, parameter_record):
@@ -412,8 +396,7 @@ class RequestMiner():
         reflection_requests = 0
         reflects_on = []
 
-        
-        for url_class, values in url_classes.items():
+        for _, values in url_classes.items():
             # Pick exactly 1 candidate from each group
             current_target = self.URLHelper.replace_parameter_value(values[0],
                 parameter_name, canary)
@@ -424,10 +407,10 @@ class RequestMiner():
                     reflection_requests += 1
                     if canary in r.text:
                         reflects_on.append(values[0])
-                except Exception as e:
-                    self.mprint("Exception reflection testing: %s" % e)
+                except requests.exceptions.RequestException as e:
+                    self.mprint("[ERROR] Mining request failed (%s)." % e)
             else:
-                self.mprint("TERMINATED REFLECTION CHECK: TOO MANY REQUESTS.")
+                self.mprint("REFLECTION CHECK TERMINATED: TOO MANY REQUESTS.")
                 break
         
         return reflects_on
@@ -449,6 +432,7 @@ class RequestMiner():
                 classes[query_hash] = [source]
             else:
                 classes[query_hash].append(source)
+        
         return classes
 
 
@@ -491,6 +475,7 @@ class RequestMiner():
             if header not in self.discovered_headers:
                 discovered += 1
                 self.discovered_headers.append(header)
+        
         return discovered
 
 
@@ -507,6 +492,7 @@ class RequestMiner():
                         headers.append(parts[0].lower())
         except IOError:
             self.mprint("[ERROR] Unable to read response file. Rights?")
+        
         return headers
 
 
@@ -537,8 +523,8 @@ class RequestMiner():
 
     def provide_results(self, results_structure):
         """
-        Allows ParamMiner to access results of other modules. ParamMiner makes
-        a copy of results provided by the modules it is dependent on.
+        Allows RequestMiner to access results of other modules. RequestMiner 
+        makes a copy of results provided by the modules it is dependent on.
         """
         if "SiteCopier" in results_structure.keys():
             self.sitecopier_results = results_structure["SiteCopier"]["results"]

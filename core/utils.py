@@ -4,7 +4,6 @@ import random
 import datetime
 import core.config as cfg
 
-EMPTY_STRING = ""
 
 def generate_run_id():
     """Generates unique and timestamped identifier for the tool's run."""

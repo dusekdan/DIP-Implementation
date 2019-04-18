@@ -3,6 +3,7 @@ import math
 
 import core.utils as utils
 import core.config as cfg
+from core import constants as Consts
 
 class TokenFinder():
 
@@ -35,9 +36,9 @@ class TokenFinder():
         source = os.path.join("output", cfg.CURRENT_RUN_ID, "SiteCopier")
         for id in range(len(os.listdir(source))):
             response = os.path.join(source, str(id), "%s.response" % id)
-            self.mprint("Searching for secrets: %s" % id)
             self.find_secrets(response, id)
 
+        self.mprint("Discovered %s secrets." % len(self.secrets))
         self.mprint("===================================%s===================================" % self.module_name)
 
 
@@ -51,10 +52,8 @@ class TokenFinder():
 
 
     def get_results(self):
-        # TODO: Add description of the method.
+        """Provides module artifacts back to module launcher to be shared."""
         # TODO: Figure out how to properly pass out results (nonparsable) art.?
-        #self.mprint("I WILL BE NOW OUTPUTTING SECRETS FOUND")
-        #print(self.secrets)
         return { "dummy":"results" }
 
 
@@ -110,7 +109,7 @@ class TokenFinder():
                                     token, url, 
                                     line_number, entropy
                                 )
-        except LookupError as e:
+        except LookupError:
             self.mprint("[ERROR] Unable to open the file with %s encoding" % file_encoding)
 
 
@@ -169,7 +168,7 @@ class TokenFinder():
          |-> https://github.com/dxa4481/truffleHog/
         """
         b64_tokens = []
-        token_chars = utils.EMPTY_STRING # FUTURE: Use 'MyTypes'.EMPTY_STRING
+        token_chars = Consts.EMPTY_STRING
         
         for character in token:
             if character in self.B64_SET:
@@ -177,7 +176,7 @@ class TokenFinder():
             else:
                 if len(token_chars) > max_len:
                     b64_tokens.append(token_chars)
-                token_chars = utils.EMPTY_STRING
+                token_chars = Consts.EMPTY_STRING
         
         if len(token_chars) > max_len:
             b64_tokens.append(token_chars)

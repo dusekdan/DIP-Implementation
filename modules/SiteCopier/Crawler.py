@@ -5,6 +5,7 @@ import requests
 import core.utils as utils
 import core.config as cfg
 from core.helpers import URLHelper
+from core import constants as Consts
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from time import sleep
@@ -386,7 +387,7 @@ class Storer():
         Translates headers dictionary returned from requests into HTTP-like 
         header file (one header field per line, standard NAME: Value style)
         """
-        header_string = ""
+        header_string = Consts.EMPTY_STRING
         for header, value in header_dict.items():
             header_string += "%s: %s\n" % (header, value)
         
