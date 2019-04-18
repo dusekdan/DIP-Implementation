@@ -108,9 +108,9 @@ class Crawler():
                 response = self._retry_session().get(target)
                 self.process_response(target, response)
 
-        except Exception as x:
-            print("Request to %s failed after retrying. Adding to failed requests." % target)
-            print(repr(x))
+        except requests.exceptions.RequestException as e:
+            self.mprint("[ERROR] Request to %s failed after retrying. Adding to failed requests." % target)
+            print(repr(e))
             self.requests_failed.append(target)
 
 

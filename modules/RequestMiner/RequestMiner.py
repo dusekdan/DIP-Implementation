@@ -147,7 +147,8 @@ class RequestMiner():
                 discovered_params.append(non_existing_q_param)
                 reflected_params.append(non_existing_q_param)
         
-        except: # ! WHAT THE HELL
+        except requests.exceptions.RequestException as e:
+            self.mprint("[ERROR][Preflight] Mining request failed (%s). Mining ops terminated." % e)
             return []
 
         hidden_parameters = self.mine_hidden_parameters(discovery_urls, 
@@ -210,10 +211,11 @@ class RequestMiner():
                     self.mprint("Reflections: %s" % reflected_params)
                 
                 sleep(self.DELAY)
-            except: # ! WHAT THE HELL
-                pass
+            except requests.exceptions.RequestException as e:
+                self.mprint("[ERROR][Discovery] Mining request failed (%s). Mining ops terminated." % e)
+                break
             
-            if run_through == 0 and len(discovered_params) > 10:
+            if run_through == 0 and len(discovered_params) > 25:
                 self.mprint("INFO: Everything is probably reflecting. Stopping mining operations.")
                 break
             run_through += 1
@@ -259,7 +261,8 @@ class RequestMiner():
                 
                 sleep(self.DELAY)
             
-            except: #! What the hell
+            except requests.exceptions.RequestException as e:
+                self.mprint("[ERROR][Pinpointing] Mining request failed (%s). Mining ops terminated." % e)
                 return None
 
         return effective_params
@@ -270,7 +273,8 @@ class RequestMiner():
         Identifies which of the parameters in URL is responsible for detected
         change in the way target application replied. Kinda request heavy.
         FUTURE: Figure how to do this efficiently with interval splitting.
-        TODO: Make it work / Use strip_tags()-like logic to compare plaintext.
+        FUTURE: Make it work / Use strip_tags()-like logic to compare plaintext.
+        FUTURE: Obsolete/refactor/replace this 
         """
         # Intersection of params in URL and params from our parameter list.
         added_params = list(
@@ -310,9 +314,9 @@ class RequestMiner():
 
                 sleep(self.DELAY)
 
-            except: #! What the hell
+            except requests.exceptions.RequestException as e:
+                self.mprint("[ERROR] Mining request failed (%s). Mining ops terminated." % e)
                 return None
-
 
 
     def rate_indicators(self, current, ok, pne):
