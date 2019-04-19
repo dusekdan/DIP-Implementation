@@ -41,11 +41,17 @@ class RequestMiner():
         # }
         self.discovered_params = {}
         self.discovered_headers = []
+        self.hidden_params = {
+            "discovered": [],
+            "reflected": [],
+            "source_url": ""
+        }
 
         self.url_discovery_parameters = []
     
     
     def mprint(self, string):
+        """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
     
 
@@ -78,11 +84,15 @@ class RequestMiner():
 
         # Find hidden URL parameters
         pd_target = self.urlparam_startpage_heuristics()
+        self.hidden_params["source_url"] = pd_target
         self.mprint(
             "Initializing parameter mining: %s" % pd_target
         )
         discovered_ps, reflected_ps = self.discover_hidden_url_parameters(pd_target)
+        self.hidden_params["discovered"] = discovered_ps
+        self.hidden_params["reflected"] = reflected_ps
         self.mprint("Discovered params: %s | Reflecting params: %s" % (len(discovered_ps), len(reflected_ps)))
+
 
         # FUTURE: Find hidden Headers
 
@@ -160,7 +170,7 @@ class RequestMiner():
         Sends requests to prepared discovery URLs and returns lists of 
         discovered parameters & list of reflective parameters.
 
-        FUTURE: Calculate the difference between .text responses and reflect it in the indicator. 
+        FUTURE: Calculate the difference between .text responses and use it as an indicator.
         """
         reflected_params = []
         discovered_params = []
@@ -518,7 +528,7 @@ class RequestMiner():
         Looks up results structure returned by SiteCopier module for source 
         URL of a given secret.
         """
-        return self.sitecopier_results["parsible"]["anyProcessor"][0]["crawledUrls"][id]
+        return self.sitecopier_results["parsable"]["anyProcessor"][0]["crawledUrls"][id]
 
 
     def provide_results(self, results_structure):
@@ -531,14 +541,27 @@ class RequestMiner():
 
 
     def get_results(self):
-        return {"dummy":"results"}
+        """Provides module artifacts back to module launcher to be shared."""
+        return {
+            "nonparsable": {
+                "existing_params": self.discovered_params,
+                "existing_headers": self.discovered_headers,
+            },
+            "parsable": {
+                "existing_params": self.discovered_params,
+                "existing_headers": self.discovered_headers,
+                "hidden_params": self.hidden_params,
+            }
+        }
 
 
     def get_dependencies(self):
+        """Provides information about the module's dependency requirements."""
         return self.dependencies
 
 
     def leaves_physical_artifacts(self):
+        """Does the module leave artifacts phisically on filesystem?"""
         return False
 
 

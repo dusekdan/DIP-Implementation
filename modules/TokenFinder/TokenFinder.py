@@ -25,6 +25,7 @@ class TokenFinder():
 
 
     def mprint(self, string):
+        """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
 
 
@@ -53,15 +54,19 @@ class TokenFinder():
 
     def get_results(self):
         """Provides module artifacts back to module launcher to be shared."""
-        # TODO: Figure out how to properly pass out results (nonparsable) art.?
-        return { "dummy":"results" }
+        return {
+            "nonparsable": self.secrets,
+            "parsable": {}
+        }
 
 
     def get_dependencies(self):
+        """Provides information about the module's dependency requirements."""
         return self.dependencies
 
 
     def leaves_physical_artifacts(self):
+        """Does the module leave artifacts phisically on filesystem?"""
         return False
 
 
@@ -82,7 +87,7 @@ class TokenFinder():
         Looks up results structure returned by SiteCopier module for source 
         URL of a given secret.
         """
-        return self.sitecopier_results["parsible"]["anyProcessor"][0]["crawledUrls"][id]
+        return self.sitecopier_results["parsable"]["anyProcessor"][0]["crawledUrls"][id]
 
 
     def find_secrets(self, target_file, id):

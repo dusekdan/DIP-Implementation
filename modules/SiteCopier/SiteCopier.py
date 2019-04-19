@@ -8,6 +8,7 @@ class SiteCopier():
         self.crawler = c.Crawler()
 
     def mprint(self, string):
+        """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
 
     def execute(self, param):
@@ -21,15 +22,18 @@ class SiteCopier():
         self.mprint("===================================%s===================================" % self.module_name)
 
     def get_dependencies(self):
+        """Provides information about the module's dependency requirements."""
         return self.dependencies
 
     def get_results(self):
+        """Provides module artifacts back to module launcher to be shared."""
         return {
-            "nonparsible": self.parsible_artifacts,
-            "parsible": {
+            "nonparsable": self.parsible_artifacts,
+            "parsable": {
                 'anyProcessor': self.parsible_artifacts
             }
         }
 
     def leaves_physical_artifacts(self):
+        """Does the module leave artifacts phisically on filesystem?"""
         return True

@@ -48,8 +48,8 @@ class Crawler():
 
     
     def mprint(self, string):
-        """Crawler logging marker."""
-        print(" [SiteCopier][CRAWLER]: %s" % string)
+        """Module-specific print wrapper."""
+        print(" [SiteCopier]: %s" % string)
 
 
     def crawl(self):
