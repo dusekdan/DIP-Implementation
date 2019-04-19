@@ -25,7 +25,7 @@ class SiteCopier():
 
     def get_results(self):
         return {
-            "nonparsible": [],
+            "nonparsible": self.parsible_artifacts,
             "parsible": {
                 'anyProcessor': self.parsible_artifacts
             }
