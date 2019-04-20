@@ -1,5 +1,6 @@
 from . import Crawler as c
 
+
 class SiteCopier():
 
     def __init__(self):

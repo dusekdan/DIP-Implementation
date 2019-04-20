@@ -11,7 +11,9 @@ from requests.packages.urllib3.util.retry import Retry
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 from time import sleep
 
+
 class RequestMiner():
+
 
     def __init__(self):
         self.dependencies = [
