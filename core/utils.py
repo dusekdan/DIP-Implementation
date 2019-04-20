@@ -1,5 +1,5 @@
 import os, errno
-import string
+import re, string
 import random
 import datetime
 import core.config as cfg
@@ -20,6 +20,27 @@ def get_rnd_string(length=10):
     """
     characters = string.digits + string.ascii_uppercase
     return ''.join(random.choice(characters) for _ in range(length))
+
+
+def find_between_str(s, start, end):
+    """Finds a string between start and end strings."""
+    return s.split(start)[1].split(end)[0]
+
+
+def find_all_between_str(s, start, end):
+    """Finds all occurrences of a string between start and end strings."""
+    # (.*?) - The question mark makes * non-greedy, which results in properly
+    # returned matches (if it was not there, a single match between the very 
+    # first separator and the very last separator would be returned.
+    matches = re.findall(start + "(.*?)" + end, s)
+    return matches
+
+
+def find_nth(sub, string, n):
+    """Finds n-th occurence of substring within the string."""
+    if n == 1:
+        return string.find(sub)
+    return string.find(sub, find_nth(sub, string, n - 1) + 1)
 
 
 def prepare_tool_environment(run_id):
