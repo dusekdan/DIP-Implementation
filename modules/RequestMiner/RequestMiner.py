@@ -202,6 +202,7 @@ class RequestMiner():
                     self.mprint("Found something... will try to pinpoint the parameter.")
                     effective_params = self.identify_parameter(url, ref_ok, ref_pne)
                     if effective_params:
+                        self.mprint("Determined: %s" % effective_params)
                         discovered_params += effective_params
 
                     for name, value in canaries.items():
@@ -351,8 +352,9 @@ class RequestMiner():
             with open('payloads/parameters.txt', 'r') as f:
                 param_list = f.read().splitlines()
                 self.url_discovery_parameters = param_list
-        except IOError:
+        except IOError as e:
             self.mprint("[ERROR] Unable to open payloads/parameters.txt.")
+            self.mprint(e)
             return
         
         for param in param_list:
@@ -502,8 +504,12 @@ class RequestMiner():
                     parts = line.split(':')
                     if len(parts) >= 2:
                         headers.append(parts[0].lower())
-        except IOError:
+        except FileNotFoundError as e:
+            self.mprint("[WARNING][404] Skipping %s" % response_file)
+        except IOError as e:
             self.mprint("[ERROR] Unable to read response file. Rights?")
+            self.mprint("File: %s" % response_file)
+            self.mprint(e)
         
         return headers
 

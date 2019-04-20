@@ -27,7 +27,7 @@ class Crawler():
         self.requests_filtered_out = []
         self.requests_queue = []
 
-        self.TOTAL_REQUESTS_LIMITATION = 10000
+        self.TOTAL_REQUESTS_LIMITATION = 1200
 
 
     def set_target(self, target):
@@ -108,6 +108,8 @@ class Crawler():
             if should_continue:
                 response = self._retry_session().get(target)
                 self.process_response(target, response)
+            else:
+                self.mprint("Determined that I should not continue ")
 
         except requests.exceptions.RequestException as e:
             self.mprint("[ERROR] Request to %s failed after retrying. Adding to failed requests." % target)
@@ -129,10 +131,12 @@ class Crawler():
         content_type = utils.extract_mime_type(headers['Content-Type'])
         
         if utils.is_binary_mime_type(content_type):
-            if 'Content-Length' not in headers:
+            if 'content-length' not in headers:
+                self.mprint("False: content-length not in headers.")
                 return False
 
-            if int(headers['Content-Length']) > request_size_treshold:
+            if int(headers['content-length']) > request_size_treshold:
+                self.mprint("False: CL header exceeded limit: %s" % int(headers['Content-Length']))
                 return False
         return True
 

@@ -116,6 +116,8 @@ class TokenFinder():
                                 )
         except LookupError:
             self.mprint("[ERROR] Unable to open the file with %s encoding" % file_encoding)
+        except FileNotFoundError:
+            self.mprint("[WARNING][404] Skipping %s" % target_file)
 
 
     def store_secret(self, secret_string, url, line_number, entropy):

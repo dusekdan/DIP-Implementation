@@ -54,19 +54,21 @@ def prepare_tool_environment(run_id):
     # Ensure 'output' folder exists.
     try:
         os.makedirs("output")
-        print("[I] Output directory did not exist and was created. Is this your first rodeo?")
+        print(" [I] Output directory did not exist and was created. Is this your first rodeo?")
     except OSError as e:
         if e.errno != errno.EEXIST:
-            print("[ERROR] Unable to create 'output' directory. Do you have sufficient rights to write in this location?")
+            print(" [ERROR] Unable to create 'output' directory. Do you have sufficient rights to write in this location?")
+            print(e)
             raise
 
     # Create 'output/run_id' folder.
     try:
         os.makedirs(os.path.join("output", run_id))
-        print("[I] Run directory %s created." % run_id)
+        print(" [I] Run directory %s created." % run_id)
     except OSError as e:
         if e.errno != errno.EEXIST:
-            print("[ERROR] Unable to create 'output/%s' directory for current run. Do you have sufficient rights to write in this location?")
+            print(" [ERROR] Unable to create 'output/%s' directory for current run. Do you have sufficient rights to write in this location?")
+            print(e)
             raise
 
 
@@ -76,9 +78,10 @@ def prepare_module_folder(module_name):
     """
     try:
         os.makedirs("output/%s/%s" % (cfg.CURRENT_RUN_ID, module_name))
-        print("[I] %s module output directory created." % module_name)
-    except OSError:
-        print("[ERROR] Unable to create output directory for %s module!" % module_name)
+        print(" [I] %s module output directory created." % module_name)
+    except OSError as e:
+        print(" [ERROR] Unable to create output directory for %s module!" % module_name)
+        print(e)
 
 
 def extract_mime_type(content_type_header_value):
@@ -114,8 +117,11 @@ def get_charset_from_headers_file(headers_file):
                     if charset != "unknown":
                         return charset
         return None
-    except IOError:
-        print("[ERROR][Utils] Could not read %s file. Does it exist? Do you have sufficient rights?" % headers_file)
+    except FileNotFoundError as e:
+        print(" [ERROR][Utils]: [404] %s")
+    except IOError as e:
+        print(" [ERROR][Utils] Could not read %s file. Does it exist? Do you have sufficient rights?" % headers_file)
+        print(e)
 
 
 def is_binary_mime_type(c_type):
@@ -131,7 +137,8 @@ def is_binary_mime_type(c_type):
 
     recognized_textual_types = [
         'text/html', 'text/plain', 'text/css', 'application/json',
-        'application/javascript', 'application/jwt', 'application/xml'
+        'application/javascript', 'application/jwt', 'application/xml',
+        'application/rss+xml', 
     ]
 
     if c_type in recognized_textual_types:
