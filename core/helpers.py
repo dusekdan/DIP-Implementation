@@ -176,3 +176,18 @@ class URLHelper():
             parts.scheme + "://" + parts.netloc + parts.path, params
         )
         return req.url
+
+
+    def update_query_string_param(self, url, param, value):
+        """Updates query string parameter by name."""
+        parts = urlparse(url)
+        params = parse_qs(parts.query)
+
+        if param in params:
+            params[param] = value
+        
+        req = PreparedRequest()
+        req.prepare_url(
+            parts.scheme + "://" + parts.netloc + parts.path, params
+        )
+        return req.url
