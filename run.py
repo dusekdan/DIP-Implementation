@@ -13,6 +13,12 @@ MODULES_FOLDER = "modules"
 cfg.CURRENT_RUN_ID = utils.generate_run_id()
 utils.prepare_tool_environment(cfg.CURRENT_RUN_ID)
 
+# FUTURE: Think about the way I am retrieving the target and remove default WP
+if len(sys.argv) >= 2:
+    run_target = sys.argv[1]
+else:
+    dprint("[I] TARGET NOT SPECIFIED. FALLING BACK TO DD.COM")
+    run_target = "https://danieldusek.com"
 
 # 1 - Discover modules
 
@@ -35,7 +41,7 @@ for module_name, instance in independent.items():
     if physical_artifacts:
         utils.prepare_module_folder(module_name)
 
-    exit_flag = instance.execute("https://danieldusek.com")
+    exit_flag = instance.execute(run_target)
     results = instance.get_results()
     
     module_results[module_name] = {
@@ -70,7 +76,7 @@ while try_again:
         
         if can_run:
             instance.provide_results(module_results)
-            exit_flag = instance.execute("https://danieldusek.com")
+            exit_flag = instance.execute(run_target)
             results = instance.get_results()
             physical_artifacts = instance.leaves_physical_artifacts()
 
