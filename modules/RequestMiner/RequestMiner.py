@@ -8,6 +8,8 @@ from requests.models import PreparedRequest
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
+from . import Presenter as p
+
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 from time import sleep
 
@@ -566,6 +568,12 @@ class RequestMiner():
     def get_dependencies(self):
         """Provides information about the module's dependency requirements."""
         return self.dependencies
+
+
+    def get_presenter(self, results):
+        """Prepares module's presenter with results structure."""
+        self.presenter = p.Presenter(results)
+        return self.presenter
 
 
     def leaves_physical_artifacts(self):

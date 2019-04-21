@@ -5,6 +5,8 @@ import core.utils as utils
 import core.config as cfg
 from core import constants as Consts
 
+from . import Presenter as p
+
 class TokenFinder():
 
 
@@ -63,6 +65,12 @@ class TokenFinder():
     def get_dependencies(self):
         """Provides information about the module's dependency requirements."""
         return self.dependencies
+
+
+    def get_presenter(self, results):
+        """Prepares module's presenter with results structure."""
+        self.presenter = p.Presenter(results)
+        return self.presenter
 
 
     def leaves_physical_artifacts(self):

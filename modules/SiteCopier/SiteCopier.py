@@ -1,16 +1,21 @@
 from . import Crawler as c
+from . import Presenter as p
 
 
 class SiteCopier():
+
 
     def __init__(self):
         self.dependencies = []
         self.module_name = "SiteCopier"
         self.crawler = c.Crawler()
+        self.presenter = None
+
 
     def mprint(self, string):
         """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
+
 
     def execute(self, param):
         self.mprint("===================================%s===================================" % self.module_name)
@@ -22,9 +27,11 @@ class SiteCopier():
 
         self.mprint("===================================%s===================================" % self.module_name)
 
+
     def get_dependencies(self):
         """Provides information about the module's dependency requirements."""
         return self.dependencies
+
 
     def get_results(self):
         """Provides module artifacts back to module launcher to be shared."""
@@ -34,6 +41,13 @@ class SiteCopier():
                 'anyProcessor': self.parsible_artifacts
             }
         }
+
+
+    def get_presenter(self, results):
+        """Prepares module's presenter with results structure."""
+        self.presenter = p.Presenter(results)
+        return self.presenter
+
 
     def leaves_physical_artifacts(self):
         """Does the module leave artifacts phisically on filesystem?"""

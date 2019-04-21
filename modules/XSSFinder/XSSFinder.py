@@ -9,6 +9,7 @@ from core.helpers import URLHelper
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
+from . import Presenter as p
 
 class XSSFinder():
 
@@ -267,6 +268,12 @@ class XSSFinder():
     def get_dependencies(self):
         """Provides information about the module's dependency requirements."""
         return self.dependencies
+
+
+    def get_presenter(self, results):
+        """Prepares module's presenter with results structure."""
+        self.presenter = p.Presenter(results)
+        return self.presenter
 
 
     def leaves_physical_artifacts(self):
