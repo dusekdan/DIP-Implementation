@@ -11,7 +11,7 @@ class Presenter():
         self._generates_media = False
         
         """Determines how high will the output be in final report."""
-        self.importance = -1
+        self.importance = 1
 
         """Minimum level of importance for data to be reported, default all."""
         self.information_level = "LOW"
@@ -25,6 +25,7 @@ class Presenter():
         Returns content ready for presentation in style specified by parameter.
         """
         print("[%s] Presenter ready and working..." % self.module_name)
+        return "TokenFinder content!"
 
 
     def generates_media(self):
