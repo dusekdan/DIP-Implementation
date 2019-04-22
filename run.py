@@ -101,12 +101,12 @@ ML.show_module_loading_errors(nonrunnable)
 
 # 5 - Compose OSINT Report and other output artifacts from modules
 PH = PresentationHelper("FIRST GENERATED REPORT")
-report_type = "HTML"
+report_type = "BWFormal"
 for module_name, instance in modules_done.items():
     dprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, instance))
     presenter = instance.get_presenter(module_results)
-    part = presenter.present_content("BWFormal")
-    PH.add_part(module_name, "This is dummy description.", part, presenter.get_importance())
+    presentable = presenter.present_content("BWFormal")
+    PH.add_part(module_name, presentable["description"], presentable["content"], presenter.get_importance())
 
 dprint(" [I] Results provided, I will now generate template.")
 PH.generate_report("BWFormal")
