@@ -263,6 +263,7 @@ class RequestMiner():
                     effective_params.append(to_append)
                 
                 sleep(self.DELAY)
+                added_params.remove(to_append)
             
             except requests.exceptions.RequestException as e:
                 self.mprint("[ERROR][Pinpointing] Mining request failed (%s). Mining ops terminated." % e)
