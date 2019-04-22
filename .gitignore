@@ -2,3 +2,4 @@ _trash
 .vscode
 __pycache__
 output
+reports
