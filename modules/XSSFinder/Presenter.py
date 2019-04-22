@@ -19,14 +19,106 @@ class Presenter():
         """Provides access to module-run results."""
         self.results = results
 
+        """Default value for presenting style."""
+        self.style = Consts.DEFAULT_PRESENTER_STYLE
+
 
     def present_content(self, presentation_style):
         """
-        Returns content ready for presentation in style specified by parameter.
+        Returns a dict of content ready for presentation and description of 
+        the part that is going to be presented. Style specified by parameter.
         """
         print("[%s] Presenter ready and working..." % self.module_name)
-        return "XSSFinder content!"
+        self.style = presentation_style
 
+        return {
+            "content": self.get_content(),
+            "description": self.get_description()
+        }
+
+
+    def get_content(self):
+        """
+        """
+        results = self.results['XSSFinder']['results']['nonparsable']
+
+        content = Consts.EMPTY_STRING
+        if len(results['discovered_xss']) > 0:
+            content += self.get_discovered_number_text(
+                len(results['discovered_xss'])
+            )
+            content += self.get_discovered_list(results['discovered_xss'])
+
+        return content
+
+
+
+    def get_discovered_list(self, discovered):
+        if self.style == 'BWFormal':
+            cnt = """
+            <table>
+                <tr>
+                    <th>URL</th>
+                    <th>Vulnerable parameter</th>
+                    <th>Protection</th>
+                    <th>Rendering Context</th>
+                </tr>
+            """
+            for xss in discovered:
+                ctx = Consts.EMPTY_STRING
+                if "context" in xss:
+                    ctx = xss["context"]
+                
+                cnt += """
+                <tr>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                </tr>
+                """ % (xss["url"], xss["param"], xss["protection"], ctx)
+            
+            cnt += "</table>"
+            
+            return cnt
+        else:
+            return ""
+
+    
+    def get_discovered_number_text(self, number):
+        if self.style == 'BWFormal':
+            return """
+            <p>Scan detected <strong>%s</strong> reflected XSS vulnerabilities.
+            """ % number
+        else:
+            return 'Scan detected %s reflected XSS vulnerabilities.' % number
+
+
+
+    def get_description(self):
+        """Introductory section of the presented part."""
+        if self.style == "BWFormal":
+            # Format it as paragraphs for HTML
+            description_lines = """
+            <p>
+            An <em>XSSFinder</em> module takes advantage of information gathered
+            by both <em>SiteCopier</em> and <em>RequestMiner</em> modules. It
+            looks for content supplied by the user that is reflected back into
+            the page and then determines whether the website author implemented
+            sufficient protection against XSS (typically encoding).
+            </p>
+            <p>
+            XSSFinder is aware of the context in which the payload is reflected
+            and before reporting discovered XSS, it verifies that necessary 
+            preconditions were satisfied for the finding, thus avoiding 
+            false positives.
+            </p> 
+            """
+            
+            return description_lines
+        else:
+            # No other presenting styles yet and introduction can be empty.
+            return Consts.EMPTY_STRING
 
     def generates_media(self):
         """

@@ -25,7 +25,10 @@ class Presenter():
         Returns content ready for presentation in style specified by parameter.
         """
         print("[%s] Presenter ready and working..." % self.module_name)
-        return "Site Copier content!"
+        return {
+            "content": "... CONTENT WILL BE GENERATED ...",
+            "description": "... DESCRIPTION WILL BE GENERATED ..."
+        }
 
 
     def generates_media(self):
