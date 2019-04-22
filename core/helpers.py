@@ -1,6 +1,133 @@
+import os
+import core.utils as utils
+from core import constants as Consts
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 from requests.models import PreparedRequest
 from collections import OrderedDict
+
+
+class PresentationHelper():
+    """
+    Contains functionality for generating the report and anything that is 
+    relevant to working with template files, report files and generally 
+    application output.
+    """
+
+    def __init__(self, report_title):
+
+        """Displayed in title-tag/document name"""
+        self.report_title = report_title
+
+        """Relative address from root to libs directory (platform independent)"""
+        self.path_to_libs = os.path.join("core", "presentation", "libs")
+        
+        """Templates available for final report."""
+        self.template_source = {
+            "BWFormal": {
+                "main": os.path.join("core", "presentation", "BWFormal", "template.htm"),
+                "part": os.path.join("core", "presentation", "BWFormal", "part.report.template.htm")
+            }
+        }
+
+        """Accumulates output from presenters before it is rendered."""
+        self.parts = {}
+
+        pass
+
+
+    def add_part(self, module, description, content, importance):
+        """
+        Adds information about report part (outputs from module execution) into
+        the internal structure.
+        """
+        self.parts[module] = {
+            "description": description,
+            "content": content,
+            "importance": importance
+        }
+
+
+    def replace_template_wildcards(self, template, title, parts):
+        """Replaces template wildards with their respective contents."""
+        return template.replace(
+            '{REPORT_TITLE}', title
+            ).replace(
+                '{PARTS}', parts
+            )
+
+
+    def replace_part_wildcards(self, part, title, description, part_output):
+        """Replaces part template wildcards with their respective contents."""
+        return part.replace(
+            '{PART_TITLE}', title
+        ).replace(
+            '{PART_DESCRIPTION}', description
+        ).replace(
+            '{PART_CONTENT}', part_output
+        )
+
+
+    def generate_report(self, style_type):
+        """
+        Generates report in output format as specified by 'style_type' 
+        parameter. At the moment HTML only.
+
+        FUTURE: Extend this method to be able to re-generate PDF out of HTML.
+        """
+
+        if style_type not in self.template_source:
+            # FUTURE: UX+=1, dump everything 'as is' in plaintext
+            print(" [ERROR] CAN NOT GENERATE REPORT. TEMPLATE NOT SUPPORTED")
+            return
+
+        # Standard processing path for HTML templates, load it, replace it,
+        # and render it.
+        try:
+            template_files = self.template_source[style_type]
+            with open(template_files["main"], 'r', encoding='utf-8') as t:
+                template = t.read()
+            with open(template_files["part"], 'r', encoding='utf-8') as p:
+                part = p.read()
+            
+            parts = {}
+            for module_name, part_record in self.parts.items():
+
+                current_part = part
+                part_output = self.replace_part_wildcards(
+                        current_part, module_name,
+                        part_record["description"], 
+                        part_record["content"]
+                )
+
+                if part_record["importance"] in parts:
+                    parts[part_record["importance"]].append(
+                        part_output
+                    )
+                else:
+                    parts[part_record["importance"]] = [part_output]
+
+            # TODO: Reflect importance
+            # Go through the parts output and craft value for {PARTS} 
+            parts_render = Consts.EMPTY_STRING
+            for _, to_render in utils.sort_dict_by_key(
+                parts, reverse=True).items():
+                for render_part in to_render:
+                    parts_render += render_part
+            
+            final_report = self.replace_template_wildcards(template, 
+            self.report_title, parts_render)
+
+            with open("reports/Report.html", 'w') as f:
+                f.write(final_report)
+
+        except FileNotFoundError as e:
+            print(" [ERROR] Template %s improperly structured." % style_type)
+            print(e)
+        except IOError as e:
+            print(" [ERROR] Unable to read template %s file." % style_type)
+            print(e)
+            
+
 
 class URLHelper():
     """

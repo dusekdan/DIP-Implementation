@@ -3,6 +3,7 @@ import sys
 import importlib
 import core.config as cfg
 from core import utils 
+from core.helpers import PresentationHelper
 from core.module_loader import ModuleLoader
 
 from debugger import DEBUG
@@ -17,7 +18,7 @@ utils.prepare_tool_environment(cfg.CURRENT_RUN_ID)
 if len(sys.argv) >= 2:
     run_target = sys.argv[1]
 else:
-    dprint("[I] TARGET NOT SPECIFIED. FALLING BACK TO DD.COM")
+    dprint(" [I] TARGET NOT SPECIFIED. FALLING BACK TO DD.COM")
     run_target = "https://danieldusek.com"
 
 # 1 - Discover modules
@@ -33,6 +34,7 @@ DBG.classified_modules(independent, satisfiable, nonrunnable)
 
 # 3 - Run independent modules and store run outputs
 
+modules_done = {}
 module_results = {}
 
 for module_name, instance in independent.items():
@@ -51,9 +53,10 @@ for module_name, instance in independent.items():
     }
     
 
-    dprint("[I] Module %s finished and saved results." % module_name)
+    dprint(" [I] Module %s finished and saved results." % module_name)
+    modules_done[module_name] = instance
 
-dprint("[I] Independent run finished.")
+dprint(" [I] Independent run finished.")
 
 # 4 - Check and run satisfiably dependent modules
 
@@ -68,7 +71,7 @@ while try_again:
         can_run = True
         for dependency in required_dependencies:
             if dependency["depends_on"] not in module_results.keys():
-                dprint("[W] Some modules can not be run. Dependency is not present in module_results.")
+                dprint(" [W] Some modules can not be run. Dependency is not present in module_results.")
                 dprint("\t %s -> %s" % (module_name, dependency["depends_on"]))
                 nonrunnable[module_name] = "Circular or non-existent dependency."
                 can_run = False
@@ -86,6 +89,8 @@ while try_again:
                 "left_physical_artifacts": physical_artifacts
             }
 
+            modules_done[module_name] = instance
+
             try_again = True
     
     # Remove modules that were already run (their result is recorded in module_results)
@@ -94,11 +99,17 @@ while try_again:
 
 ML.show_module_loading_errors(nonrunnable)
 
-# 3 - Run them via standardized calls (Is this called the API?) 
-# # TODO: Make this follow process flow described in module.loading.strategy.md
-#for module_name, instance in instantiated_modules.items():
-#    DBG.starting_module(module_name)
-#    instance.execute()
+# 5 - Compose OSINT Report and other output artifacts from modules
+PH = PresentationHelper("FIRST GENERATED REPORT")
+report_type = "HTML"
+for module_name, instance in modules_done.items():
+    dprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, instance))
+    presenter = instance.get_presenter(module_results)
+    part = presenter.present_content("BWFormal")
+    PH.add_part(module_name, "This is dummy description.", part, presenter.get_importance())
+
+dprint(" [I] Results provided, I will now generate template.")
+PH.generate_report("BWFormal")
 
 
 
