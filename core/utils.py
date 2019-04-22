@@ -3,6 +3,7 @@ import re, string
 import random
 import datetime
 import core.config as cfg
+from collections import OrderedDict
 
 
 def generate_run_id():
@@ -54,10 +55,12 @@ def prepare_tool_environment(run_id):
     # Ensure 'output' folder exists.
     try:
         os.makedirs("output")
-        print(" [I] Output directory did not exist and was created. Is this your first rodeo?")
+        print(" [I] 'Output' directory did not exist and was created. Is this your first rodeo?")
+        os.makedirs("reports")
+        print(" [I] 'Reports' directory did not exist and was created. Is this your first rodeo?")
     except OSError as e:
         if e.errno != errno.EEXIST:
-            print(" [ERROR] Unable to create 'output' directory. Do you have sufficient rights to write in this location?")
+            print(" [ERROR] Unable to create essential directories. Do you have sufficient rights to write in this location?")
             print(e)
             raise
 
@@ -145,6 +148,17 @@ def is_binary_mime_type(c_type):
         return False
 
     return True
+
+
+def sort_dict_by_key(dictionary, reverse=False):
+    """Takes dict and returns OrderedDict sorted by keys."""
+    od = OrderedDict()
+    for key in sorted(dictionary.keys(), reverse=reverse):
+        od[key] = dictionary[key]
+    
+    return od
+
+
 
 def get_rid_of_windows_nl(response):
     pass
