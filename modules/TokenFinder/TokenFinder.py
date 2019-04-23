@@ -102,7 +102,17 @@ class TokenFinder():
         """
         Searches file for highly entropic strings which are considered
         to be potentially secret/access token.
+        
+        Ignores binary files.
         """
+
+        mime_type = utils.get_mimetype_from_headers_file(target_file)
+        if not mime_type:
+            return
+
+        if  utils.is_binary_mime_type(mime_type):
+            return
+
         file_encoding = self.obtain_response_encoding(target_file)
         try:
             with open(target_file,
