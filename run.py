@@ -100,16 +100,17 @@ while try_again:
 ML.show_module_loading_errors(nonrunnable)
 
 # 5 - Compose OSINT Report and other output artifacts from modules
-PH = PresentationHelper("FIRST GENERATED REPORT")
+report_name = "Vulnerability Report (%s)" % (cfg.CURRENT_RUN_ID)
+PH = PresentationHelper(report_name)
 report_type = "BWFormal"
 for module_name, instance in modules_done.items():
-    dprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, instance))
+    dprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, report_type))
     presenter = instance.get_presenter(module_results)
-    presentable = presenter.present_content("BWFormal")
+    presentable = presenter.present_content(report_type)
     PH.add_part(module_name, presentable["description"], presentable["content"], presenter.get_importance())
 
 dprint(" [I] Results provided, I will now generate template.")
-PH.generate_report("BWFormal")
+PH.generate_report(report_type)
 
 
 

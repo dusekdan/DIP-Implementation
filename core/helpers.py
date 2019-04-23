@@ -1,6 +1,7 @@
 import os
 import core.utils as utils
 from core import constants as Consts
+from core import config as cfg
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 from requests.models import PreparedRequest
 from collections import OrderedDict
@@ -106,8 +107,8 @@ class PresentationHelper():
                 else:
                     parts[part_record["importance"]] = [part_output]
 
-            # TODO: Reflect importance
-            # Go through the parts output and craft value for {PARTS} 
+            # Go through the parts output and craft value for {PARTS}, ordered
+            # by importance as reported by the module.
             parts_render = Consts.EMPTY_STRING
             for _, to_render in utils.sort_dict_by_key(
                 parts, reverse=True).items():
@@ -117,7 +118,8 @@ class PresentationHelper():
             final_report = self.replace_template_wildcards(template, 
             self.report_title, parts_render)
 
-            with open("reports/Report.html", 'w') as f:
+            report_path = os.path.join("reports", cfg.CURRENT_RUN_ID + ".htm")
+            with open(report_path, 'w') as f:
                 f.write(final_report)
 
         except FileNotFoundError as e:
