@@ -119,7 +119,7 @@ class PresentationHelper():
             self.report_title, parts_render)
 
             report_path = os.path.join("reports", cfg.CURRENT_RUN_ID + ".htm")
-            with open(report_path, 'w') as f:
+            with open(report_path, 'w', errors="ignore") as f:
                 f.write(final_report)
 
         except FileNotFoundError as e:

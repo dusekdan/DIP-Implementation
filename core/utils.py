@@ -162,6 +162,9 @@ def sort_dict_by_key(dictionary, reverse=False):
 
 def encode_for_html(string):
     """Replaces "dangerous" characters for HTML rendering inside a string."""
+    if type(string) is not str:
+        string = str(string)
+    
     return cgi.escape(string)
 
 
