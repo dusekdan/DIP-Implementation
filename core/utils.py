@@ -114,15 +114,31 @@ def get_charset_from_headers_file(headers_file):
     specified in 'Content-Type' header. Returns None if it was not.
     """
     try:
-        with open(headers_file, 'r') as f:
+        with open(headers_file, 'r', errors="ignore") as f:
             for line in f.readlines():
-                if line.startswith('Content-Type'):
+                if line.lower().startswith('content-type'):
                     charset = extract_charset(line.split(':')[1])
                     if charset != "unknown":
                         return charset
         return None
     except FileNotFoundError as e:
-        print(" [ERROR][Utils]: [404] %s")
+        print(" [ERROR][Utils]: [404] %s" % headers_file)
+    except IOError as e:
+        print(" [ERROR][Utils] Could not read %s file. Does it exist? Do you have sufficient rights?" % headers_file)
+        print(e)
+
+def get_mimetype_from_headers_file(headers_file):
+    """
+    Retrieves 'content-type' header value from headers file.
+    """
+    try:
+        with open(headers_file, 'r', errors="ignore") as f:
+            for line in f.readlines():
+                if line.lower().startswith('content-type'):
+                    return line.split(':')[1]
+        return None
+    except FileNotFoundError as e:
+        print(" [ERROR][Utils]: [404] %s" % headers_file)
     except IOError as e:
         print(" [ERROR][Utils] Could not read %s file. Does it exist? Do you have sufficient rights?" % headers_file)
         print(e)
