@@ -84,6 +84,8 @@ class Presenter():
                 ctx = Consts.EMPTY_STRING
                 if "context" in xss:
                     ctx = self.context_to_readable(xss["context"])
+                else:
+                    ctx = "&mdash;"
                 
                 cnt += """
                 <tr>

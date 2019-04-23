@@ -92,7 +92,6 @@ class Presenter():
             """
 
             for secret, record in secrets.items():
-                #print("Record: %s " % record)
                 cnt += """
                 <tr>
                     <td><textarea>%s</textarea></td>
