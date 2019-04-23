@@ -1,4 +1,5 @@
 from core import constants as Consts
+from core import utils as utils
 
 
 class Presenter():
@@ -19,16 +20,120 @@ class Presenter():
         """Provides access to module-run results."""
         self.results = results
 
+        """Default value for presenting style."""
+        self.style = Consts.DEFAULT_PRESENTER_STYLE
+
 
     def present_content(self, presentation_style):
         """
         Returns content ready for presentation in style specified by parameter.
         """
-        print("[%s] Presenter ready and working..." % self.module_name)
+        self.style = presentation_style
         return {
-            "content": "... CONTENT WILL BE GENERATED ...",
-            "description": "... DESCRIPTION WILL BE GENERATED ..."
+            "content": self.get_content(),
+            "description": self.get_description()
         }
+
+
+    def get_description(self):
+        """Introductory section of the presented part."""
+        if self.style == 'BWFormal':
+            description_lines = """
+            <p>A <em>TokenFinder</em> modules scans source code as retrieved
+            by SiteCopier and searches for highly-entropic string sequences.
+            High-entropy is a property of a string that was generated to be as
+            random as possible on purpose. This property is fairly common for 
+            strings that serve as private keys, access tokens and other forms
+            of credentials that should be kept secret. This module identifies
+            such strings in responses returned by the target application.</p>
+            """
+            return description_lines
+        else:
+            # Plain-text default.
+            return """
+            A TokenFinder modules scans source code as retrieved by SiteCopier
+            and searches for highly-entropic string sequences. High-entropy is
+            a property of a string that was generated to be as random as 
+            possible on purpose. This property is fairly common for strings 
+            that serve as private keys, access tokens and other forms of 
+            credentials that should be kept secret. This module identifies such
+            strings in responses returned by the target application.
+            """
+
+
+    def get_content(self):
+        """
+        Assembles content to be returned from the presenter. In the future,
+        this might be the place where a decision about style-specific 
+        assembler method call will be made based on self.style.
+        """
+        results = self.results['TokenFinder']['results']['nonparsable']
+
+        content = Consts.EMPTY_STRING
+        if len(results) > 0:
+            # Something will be presented
+            content += self.get_secrets_table(results)
+        else:
+            content += self.get_no_secrets_found_text()
+        
+        return content
+
+
+    def get_secrets_table(self, secrets):
+        """Prepares style-based table output containing discovered secrets."""
+        if self.style == 'BWFormal':
+            print(secrets)
+            cnt = """
+            <table>
+                <tr>
+                    <th>Secret string</th>
+                    <th>Instances</th>
+                </tr>
+            """
+
+            for secret, record in secrets.items():
+                #print("Record: %s " % record)
+                cnt += """
+                <tr>
+                    <td><textarea>%s</textarea></td>
+                    <td>
+                    <table>
+                        <tr>
+                        <th>URL</th>
+                        <th>Line (in source code)</th>
+                        <th>Entropy (Min: 1.0, Max: 8.0)</th>
+                        </tr>""" % utils.encode_for_html(secret)
+                
+                for sr in record:
+                    cnt += """
+                    <tr>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                    </tr>
+                    """ % (
+                    utils.encode_for_html(sr["url"]),
+                    utils.encode_for_html(sr["line"]),
+                    utils.encode_for_html(sr["entropy"])
+                    )
+
+                cnt += "</table></td></tr>"
+
+            cnt += "</table>"
+            return cnt
+        else:
+            # FUTURE: Plain-text table presentation
+            return Consts.EMPTY_STRING
+
+
+    def get_no_secrets_found_text(self):
+        """Returns message about no secrets being found."""
+        if self.style == 'BWFormal':
+            return """
+            <p>TokenFinder did not identify any secrets in the source code.</p>
+            """
+        else:
+            return "TokenFinder did not identify any secrets in the source code."
 
 
     def generates_media(self):

@@ -39,6 +39,9 @@ class Presenter():
 
     def get_content(self):
         """
+        Assembles content to be returned from the presenter. In the future,
+        this might be the place where a decision about style-specific 
+        assembler method call will be made based on self.style.
         """
         results = self.results['XSSFinder']['results']['nonparsable']
 
@@ -47,7 +50,9 @@ class Presenter():
             content += self.get_discovered_number_text(
                 len(results['discovered_xss'])
             )
-            content += self.get_discovered_list(results['discovered_xss'])
+            content += self.get_discovered_table(results['discovered_xss'])
+        else:
+            content += self.get_no_issues_discovered_text()
 
         return content
 
@@ -60,7 +65,10 @@ class Presenter():
             return 'Inside HTML body'
 
 
-    def get_discovered_list(self, discovered):
+    def get_discovered_table(self, discovered):
+        """
+        Prepares style-based table output containing discovered XSS findings.
+        """
         if self.style == 'BWFormal':
             cnt = """
             <table>
@@ -84,7 +92,12 @@ class Presenter():
                     <td>%s</td>
                     <td>%s</td>
                 </tr>
-                """ % (xss["url"], xss["param"], xss["protection"], ctx)
+                """ % (
+                    utils.encode_for_html(xss["url"]), 
+                    utils.encode_for_html(xss["param"]), 
+                    utils.encode_for_html(xss["protection"]),
+                    ctx
+                )
 
                 if xss["protection"] == 'EncodedForHTML':
                     tag_pl_mention = 1
@@ -122,6 +135,16 @@ class Presenter():
         else:
             # Future: Plain text results presentation is default.
             return ""
+
+
+    def get_no_issues_discovered_text(self):
+        """Message about XSSFinder not finding any vulnerabilities."""
+        if self.style == 'BWFormal':
+            return """
+            <p>No reflected XSS vulnerabilities were discovered.</p>
+            """
+        else:
+            return 'No reflected XSS vulnerabilities were discovered.'
 
     
     def get_discovered_number_text(self, number):
