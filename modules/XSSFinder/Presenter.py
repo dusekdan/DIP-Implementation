@@ -1,5 +1,5 @@
 from core import constants as Consts
-
+from core import utils as utils
 
 class Presenter():
 
@@ -52,6 +52,13 @@ class Presenter():
         return content
 
 
+    def context_to_readable(self, ctx):
+        """Translates code-name for context into human readable string."""
+        if ctx == 'ATTR':
+            return 'Inside attribute'
+        elif ctx == 'TAG':
+            return 'Inside HTML body'
+
 
     def get_discovered_list(self, discovered):
         if self.style == 'BWFormal':
@@ -64,10 +71,11 @@ class Presenter():
                     <th>Rendering Context</th>
                 </tr>
             """
+            attr_pl_mention = dif_pl_mention = tag_pl_mention = False
             for xss in discovered:
                 ctx = Consts.EMPTY_STRING
                 if "context" in xss:
-                    ctx = xss["context"]
+                    ctx = self.context_to_readable(xss["context"])
                 
                 cnt += """
                 <tr>
@@ -77,11 +85,42 @@ class Presenter():
                     <td>%s</td>
                 </tr>
                 """ % (xss["url"], xss["param"], xss["protection"], ctx)
+
+                if xss["protection"] == 'EncodedForHTML':
+                    tag_pl_mention = 1
+                elif xss["protection"] == 'EncodedForAttributes':
+                    attr_pl_mention = 1
+                elif xss["protection"] == 'OtherwiseModified':
+                    dif_pl_mention = 1
             
             cnt += "</table>"
+
+            el_sobkys_payload= utils.encode_for_html("""jaVasCript:/*-/*/*\/*'/*"/**/(/* */oNcliCk=alert() )//0A0a//</stYle/</titLe/</teXtarEa/</scRipt/-->\x3csVg/<sVg/oNloAd=alert()//>\x3e""")
+            advisory_paragraph = """
+            <p><strong>Exploitation advisory</strong>: If URL and parameter are
+            listed in the previous table with protection different from 'None'
+            then some encoding took place prior to rendering the payload. For
+            demonstration of vulnerability, following payload can be used.
+            </p>
+            <code>%s</code>
+            """ % el_sobkys_payload
+
+
+            # If non-trivial protections were mentioned, provide advisory
+            if attr_pl_mention or dif_pl_mention or tag_pl_mention:
+                cnt += advisory_paragraph
+            
+            if dif_pl_mention:
+                cnt += """When parameter is protected by 
+                <strong>OtherwiseModified</strong> type of protection, it is
+                highly likely that it is vulnerable to XSS. Some of the special
+                characters (&gt;, &lt;, ", ') were not properly encoded and 
+                it is probably possible to escape the rendering context.
+                """
             
             return cnt
         else:
+            # Future: Plain text results presentation is default.
             return ""
 
     
