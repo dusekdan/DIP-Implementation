@@ -1,5 +1,6 @@
 import os, errno
 import re, string
+import cgi
 import random
 import datetime
 import core.config as cfg
@@ -158,6 +159,10 @@ def sort_dict_by_key(dictionary, reverse=False):
     
     return od
 
+
+def encode_for_html(string):
+    """Replaces "dangerous" characters for HTML rendering inside a string."""
+    return cgi.escape(string)
 
 
 def get_rid_of_windows_nl(response):
