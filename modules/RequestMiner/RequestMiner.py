@@ -417,6 +417,7 @@ class RequestMiner():
             # Pick exactly 1 candidate from each group
             current_target = self.URLHelper.replace_parameter_value(values[0],
                 parameter_name, canary)
+            self.mprint("Checking candidate: %s" % current_target)
 
             if reflection_requests <= self.MAX_REFLECTION_REQUESTS:
                 try:
@@ -443,12 +444,18 @@ class RequestMiner():
         for source in sources:
             parts = urlparse(source)
             query = parts.query
+            path = parts.path
+
+            # We need to prepend file name here (other wise scenario for
+            # listproduct.php?artist= and artists.php?artist= will fall
+            # into the same category).
+            path_hash = ''.join(sorted(path.split('/')))
             query_hash = ''.join(sorted(list(parse_qs(query).keys())))
-            
-            if query_hash not in classes:
-                classes[query_hash] = [source]
+            hash_ = path_hash + query_hash
+            if hash_ not in classes:
+                classes[hash_] = [source]
             else:
-                classes[query_hash].append(source)
+                classes[hash_].append(source)
         
         return classes
 

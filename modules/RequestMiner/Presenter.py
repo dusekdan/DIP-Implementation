@@ -2,6 +2,7 @@ from core import constants as Consts
 from core import utils as utils
 from urllib.parse import urlparse, parse_qs
 
+
 class Presenter():
 
 
@@ -165,12 +166,18 @@ class Presenter():
         for source in sources:
             parts = urlparse(source)
             query = parts.query
+            path = parts.path
+
+            # We need to prepend file name here (other wise scenario for
+            # listproduct.php?artist= and artists.php?artist= will fall
+            # into the same category).
+            path_hash = ''.join(sorted(path.split('/')))
             query_hash = ''.join(sorted(list(parse_qs(query).keys())))
-            
-            if query_hash not in classes:
-                classes[query_hash] = [source]
+            hash_ = path_hash + query_hash
+            if hash_ not in classes:
+                classes[hash_] = [source]
             else:
-                classes[query_hash].append(source)
+                classes[hash_].append(source)
         
         return classes
 
