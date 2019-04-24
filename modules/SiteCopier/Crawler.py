@@ -27,7 +27,7 @@ class Crawler():
         self.requests_filtered_out = []
         self.requests_queue = []
 
-        self.TOTAL_REQUESTS_LIMITATION = 1200
+        self.TOTAL_REQUESTS_LIMITATION = 100
 
 
     def set_target(self, target):
@@ -128,7 +128,10 @@ class Crawler():
         downloaded. Possibly through self.set_options() member.
         """
         request_size_treshold = 20000000
-        content_type = utils.extract_mime_type(headers['Content-Type'])
+        content_type = utils.extract_mime_type(headers['content-type'])
+
+        if utils.is_image_mime_type(content_type):
+            return True
         
         if utils.is_binary_mime_type(content_type):
             if 'content-length' not in headers:
@@ -158,6 +161,7 @@ class Crawler():
 
                 link_group = self.extract_links_from_html(response.text)
                 self.process_a_links(link_group['a'])
+                self.process_a_links(link_group['media'])
                 self.process_resource_links(link_group['link'])
 
             elif content_type == 'text/css':
