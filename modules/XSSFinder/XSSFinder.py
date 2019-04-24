@@ -65,6 +65,8 @@ class XSSFinder():
 
         target = self.URLHelper.update_query_string_param(url, param, payload)
 
+        self.mprint("XSS-Checking: %s" % target)
+
         try:
             # Acquire response for given payload for further inspection.
             r = self._retry_session().get(target)
@@ -74,30 +76,52 @@ class XSSFinder():
             print(e)
             return []
 
+        # XSS is only possible when content around it is of text/html c-type.
+        if not r.headers['content-type'] or \
+            not r.headers['content-type'].strip().startswith('text/html'):
+            self.mprint("XSS Reflection check skipped (content-type is missing or not text/html).")
+            self.mprint("(%s)" % url)
+            return []
+
         # Locate reflections
         reflections = utils.find_all_between_str(r.text, start_sep, end_sep)
+        if len(reflections) > 0:
+            ref_index = 0
+            for ref in reflections:
+                protection_level = self.detect_protection_level(
+                    detector_string, ref.strip()
+                )
 
-        ref_index = 0
-        for ref in reflections:
-            protection_level = self.detect_protection_level(
-                detector_string, ref.strip()
-            )
+                # Unsanitized reflection requires no more testing.
+                if protection_level == "None":
+                    self.mprint("Parameter %s is not protected against XSS." % param)
+                    discovered.append(
+                        self.craft_discovered_XSS_object(url, param, "None")
+                    )
+                else:
+                    # Classify XSS based on whether sanitization was a success
+                    # or a RMS Tayleur-class failure.
+                    discovered.append(
+                        self.classify_XSS(url, r, param, ref, protection_level,
+                        start_sep, end_sep, ref_index)
+                    )
 
-            # Unsanitized reflection requires no more testing.
-            if protection_level == "None":
-                self.mprint("Parameter %s is not protected against XSS." % param)
+                ref_index += 1
+        else:
+            # Maybe more simple payload will trigger some response.
+            self.mprint("Complex check did not trigger desired response. Trying more simple payload.")
+            try:
+                target = self.URLHelper.update_query_string_param(url, param, detector_string)
+                r = self._retry_session().get(target)
+            except requests.exceptions.RequestException:
+                print("Exception occurred when sending a request.")
+                print(e)
+                return []
+
+            if detector_string in r.text:
                 discovered.append(
                     self.craft_discovered_XSS_object(url, param, "None")
                 )
-            else:
-                # Classify XSS based on whether sanitization was a success
-                # or a RMS Tayleur-class failure.
-                discovered.append(
-                    self.classify_XSS(url, r, param, ref, protection_level,
-                    start_sep, end_sep, ref_index)
-                )
-
-            ref_index += 1
         
         return [x for x in discovered if x != Consts.EMPTY_OBJECT]
 
