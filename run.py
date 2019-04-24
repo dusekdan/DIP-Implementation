@@ -103,7 +103,7 @@ ML.show_module_loading_errors(nonrunnable)
 report_name = "Vulnerability Report (%s)" % (cfg.CURRENT_RUN_ID)
 PH = PresentationHelper(report_name)
 presentation_options = {
-    "show_module_description": False
+    "show_module_description": True
 }
 PH.set_options(presentation_options)
 report_type = "BWFormal"

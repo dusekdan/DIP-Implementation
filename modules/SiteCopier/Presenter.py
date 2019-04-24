@@ -136,7 +136,7 @@ class Presenter():
         """Introductory section of the presented part."""
         if self.style == 'BWFormal':
             intro = """
-            <p> SiteCopier module crawls the target from its root address,
+            <p>SiteCopier module crawls the target from its root address,
             finds and processes every link. Links that are in scope of the 
             target application are then requested and the response is recorded.
             Recorded responses can be found in <em>output/%s/SiteCopier</em> 
