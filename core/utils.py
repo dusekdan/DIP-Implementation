@@ -166,6 +166,20 @@ def is_binary_mime_type(c_type):
 
     return True
 
+def is_image_mime_type(c_type):
+    """Returns True when content-type is an image file."""
+    if c_type.split('/')[0] == 'image':
+        return True
+    
+    recognized_image_types = [
+        'image/gif', 'image/png', 'image/jpeg'
+    ]
+
+    if c_type in recognized_image_types:
+        return True
+    
+    return False
+
 
 def sort_dict_by_key(dictionary, reverse=False):
     """Takes dict and returns OrderedDict sorted by keys."""
