@@ -102,6 +102,10 @@ ML.show_module_loading_errors(nonrunnable)
 # 5 - Compose OSINT Report and other output artifacts from modules
 report_name = "Vulnerability Report (%s)" % (cfg.CURRENT_RUN_ID)
 PH = PresentationHelper(report_name)
+presentation_options = {
+    "show_module_description": False
+}
+PH.set_options(presentation_options)
 report_type = "BWFormal"
 for module_name, instance in modules_done.items():
     dprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, report_type))

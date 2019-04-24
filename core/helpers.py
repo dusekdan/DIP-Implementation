@@ -36,6 +36,11 @@ class PresentationHelper():
         pass
 
 
+    def set_options(self, options):
+        """Allows setting of some presenting parameters"""
+        self.options = options
+
+
     def add_part(self, module, description, content, importance):
         """
         Adds information about report part (outputs from module execution) into
@@ -59,6 +64,11 @@ class PresentationHelper():
 
     def replace_part_wildcards(self, part, title, description, part_output):
         """Replaces part template wildcards with their respective contents."""
+
+        if "show_module_description" in self.options:
+            if not self.options["show_module_description"]:
+                description = Consts.EMPTY_STRING
+
         return part.replace(
             '{PART_TITLE}', title
         ).replace(
