@@ -128,6 +128,11 @@ class Crawler():
         downloaded. Possibly through self.set_options() member.
         """
         request_size_treshold = 20000000
+
+        # Experimentally determined positive approach on missing content-type.
+        if 'content-type' not in headers:
+            return True
+
         content_type = utils.extract_mime_type(headers['content-type'])
 
         if utils.is_image_mime_type(content_type):
