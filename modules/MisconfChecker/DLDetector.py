@@ -64,8 +64,13 @@ class DLDetector():
         if '<h1>Index of' in response:
             heading_indicator = True
 
+        # First two conditions are standard.
+        # Later two conditions were discovered in startupgarden.fi's directory
+        # listing response-
         if '<a href="../">../</a>' in response or \
-            "<a href='../'>../</a>" in response:
+            "<a href='../'>../</a>" in response or \
+            '<a href="/">Parent Directory</a>' in response or\
+            "<a href='/'>Parent Directory</a>" in response:
             above_indicator = True
         
         return title_indicator and heading_indicator and above_indicator
