@@ -248,7 +248,6 @@ class RequestMiner():
             )
             try:
                 r = self._retry_session().get(appended)
-                self.mprint("Requesting: %s" % appended)
                 
                 ci = self.rate_indicators(
                     r.status_code, ok["code"], notok["code"]
