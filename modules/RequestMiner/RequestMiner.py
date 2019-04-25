@@ -241,13 +241,14 @@ class RequestMiner():
         effective_params = []
 
         for _ in range(len(added_params)):
-            to_append = random.choice(added_params)
+            to_append = added_params.pop()
             appended = self.URLHelper.add_query_string_param(
                 self.urlparam_startpage_heuristics(), 
                 to_append, utils.get_rnd_string()
             )
             try:
                 r = self._retry_session().get(appended)
+                self.mprint("Requesting: %s" % appended)
                 
                 ci = self.rate_indicators(
                     r.status_code, ok["code"], notok["code"]
@@ -263,7 +264,6 @@ class RequestMiner():
                     effective_params.append(to_append)
                 
                 sleep(self.DELAY)
-                added_params.remove(to_append)
             
             except requests.exceptions.RequestException as e:
                 self.mprint("[ERROR][Pinpointing] Mining request failed (%s). Mining ops terminated." % e)
