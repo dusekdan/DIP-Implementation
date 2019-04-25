@@ -49,6 +49,12 @@ class Presenter():
         else:
             content += self.get_no_data()
 
+        # Corner case when nothing was discovered
+        if  len(results["directory_listing"]) == 0 and \
+            len(results["vcs_resources"]) == 0 and \
+            len(results["hidden_resources"]) == 0:
+            content += self.get_no_data()
+
         return content
 
 
@@ -94,7 +100,7 @@ class Presenter():
                 
                 info += "</ul>"
                 
-                return info
+            return info
         else:
             # Future: Return this in plain-text format.
             return Consts.EMPTY_STRING
