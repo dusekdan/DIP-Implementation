@@ -1,0 +1,8 @@
+.git
+git
+.gitignore
+.svn
+.idea
+.hg
+nbproject
+.vscode
