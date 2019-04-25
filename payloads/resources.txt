@@ -4687,7 +4687,6 @@ faq_admin.%EXT%
 faqs
 fashion
 fault
-favicon.ico
 favorite
 favorites
 fb
