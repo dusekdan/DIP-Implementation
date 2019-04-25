@@ -4,6 +4,7 @@ import requests
 from core.helpers import URLHelper
 from . import Presenter as p
 from . import DLDetector as _DLD
+from . import HRLocator as _HRL
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -28,6 +29,11 @@ class MisconfChecker():
 
         self.DELAY = 0.1
 
+        """Structures to hold findings discovered by the scan."""
+        self.resources = []
+        self.vcs_resources = []
+        self.directory_listing = []
+
 
     def mprint(self, string):
         """Module-specific print wrapper."""
@@ -39,16 +45,25 @@ class MisconfChecker():
         self.target = param
         self.mprint("Executing %s module!" % self.module_name)
 
-        #! DIRECTORY_LISTING
+        # Hidden resources & VCS leftover resources discovery
+        HRL = _HRL.HiddenResourcesLocator(self.target)
+        self.mprint("Locating hidden resources...")
+        self.resources, self.vcs_resources = HRL.discover_hidden_resources()
+        
+        # Enabled directory listing discovery
         sc_artifacts = self.sitecopier_results["parsable"]["anyProcessor"][0]
-        urls_seen = sc_artifacts["crawledUrls"] + sc_artifacts["failedUrls"]
+        urls_seen = (
+            sc_artifacts["crawledUrls"] + sc_artifacts["failedUrls"] + 
+            self.resources + self.vcs_resources
+        )
         DLD = _DLD.DLDetector(urls_seen, self.target)
+        self.mprint("Searching for enabled directory listing...")
         self.directory_listing = DLD.detect_directory_listing()
 
+        # Debug only outputs.
+        self.mprint("Discovered following resources: %s" % self.resources)
+        self.mprint("Discovered following VCS resources: %s" % self.vcs_resources)
         self.mprint("Detected directory listing in: %s" % self.directory_listing)
-
-        
-        
 
         self.mprint("===================================%s===================================" % self.module_name)
 
@@ -66,7 +81,9 @@ class MisconfChecker():
         """Provides module artifacts back to module launcher to be shared."""
         return {
             "nonparsable": {
-                "directory_listing": [],
+                "hidden_resources": self.resources,
+                "vcs_resources": self.vcs_resources,
+                "directory_listing": self.directory_listing,
             },
             "parsable": {}
         }

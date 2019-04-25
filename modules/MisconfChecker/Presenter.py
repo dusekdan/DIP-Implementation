@@ -30,9 +30,74 @@ class Presenter():
         """
         self.style = presentation_style
         return {
-            "content": "TO BE GENERATED",
+            "content": self.get_content(),
             "description": self.get_description()
         }
+
+
+    def get_content(self):
+        """
+        Assembles content to be returned from the presenter. In the future,
+        this might be the place where a decision about style-specific 
+        assembler method call will be made based on self.style.
+        """
+        results = self.results['MisconfChecker']['results']['nonparsable']
+
+        content = Consts.EMPTY_STRING
+        if len(results) > 0:
+            content += self.get_findings(results)
+        else:
+            content += self.get_no_data()
+
+        return content
+
+
+    def get_findings(self, results):
+        """Returns discovered findings in presentable format."""
+        directory_listing_found = len(results["directory_listing"]) > 0
+        vcs_leftovers_found = len(results["vcs_resources"]) > 0
+        resources_found = len(results["hidden_resources"]) > 0
+        if self.style == 'BWFormal':
+            # Information paragraphs about what was found.
+            info = Consts.EMPTY_STRING
+            if directory_listing_found:
+                info += """
+                <p><strong>Enabled directory browsing/listing</strong> was
+                discovered in the following locations:</p>
+                <ul>"""
+
+                for dl_item in results["directory_listing"]:
+                    info += "<li>%s</li>" % utils.encode_for_html(dl_item)
+
+                info += "</ul>"
+            if vcs_leftovers_found:
+                info += """
+                <p><strong>Version control files</strong> were pushed into the
+                production along with the code. Sometimes, it is possible to 
+                recreate the codebase and discover take over the application.
+                See following locations:</p>
+                <ul>
+                """
+
+                for vcs_item in results["vcs_resources"]:
+                    info += "<li>%s</li>" % utils.encode_for_html(vcs_item)
+                
+                info += "</ul>"
+            if resources_found:
+                info += """<p>Other interesting <strong>resources</strong> were
+                found in the following locations:</p>
+                <ul>
+                """
+
+                for resource in results["hidden_resources"]:
+                    info += "<li>%s</li>" % utils.encode_for_html(resource)
+                
+                info += "</ul>"
+                
+                return info
+        else:
+            # Future: Return this in plain-text format.
+            return Consts.EMPTY_STRING
 
 
     def get_no_data(self):
@@ -51,12 +116,18 @@ class Presenter():
         """Introductory section of the presented part."""
         if self.style == 'BWFormal':
             intro = """
-            <p>TODO</p>
+            <p><em>MisconfChecker</em> module checks for configuration errors
+            in deployed application, such as enabled directory listing, 
+            VCS structures put into the production and hidden resources that
+            are available, but not meant to be seen.</p>
             """
             return intro
         else:
             return """
-            TODO
+            MisconfChecker module checks for configuration errors
+            in deployed application, such as enabled directory listing, 
+            VCS structures put into the production and hidden resources that
+            are available, but not meant to be seen.
             """
 
 
