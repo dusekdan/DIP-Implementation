@@ -100,6 +100,16 @@ class MisconfChecker():
         return self.presenter
 
 
+    def set_options(self, options):
+        """Sets options for a module."""
+        if "DELAY" in options:
+            self.DELAY = options["DELAY"]
+        if "RANDOMIZE_SELECTION" in options:
+            self.RANDOMIZE_SELECTION = bool(options["RANDOMIZE_SELECTION"])
+        if "MAX_REQUESTS" in options:
+            self.MAX_REQUESTS = options["MAX_REQUESTS"]
+
+
     def leaves_physical_artifacts(self):
         """Does the module leave artifacts phisically on filesystem?"""
         return False

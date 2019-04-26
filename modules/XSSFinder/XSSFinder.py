@@ -289,6 +289,12 @@ class XSSFinder():
         }
 
 
+    def set_options(self, options):
+        """Sets options for a module."""
+        if "DELAY" in options:
+            self.DELAY = options["DELAY"]
+
+
     def get_dependencies(self):
         """Provides information about the module's dependency requirements."""
         return self.dependencies

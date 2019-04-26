@@ -43,6 +43,11 @@ class SiteCopier():
         }
 
 
+    def set_options(self, options):
+        """Sets options for a module."""
+        self.crawler.set_options(options)
+
+
     def get_presenter(self, results):
         """Prepares module's presenter with results structure."""
         self.presenter = p.Presenter(results)

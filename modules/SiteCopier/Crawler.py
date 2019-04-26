@@ -28,6 +28,7 @@ class Crawler():
         self.requests_queue = []
 
         self.TOTAL_REQUESTS_LIMITATION = 100
+        self.DELAY = 0.1
 
 
     def set_target(self, target):
@@ -37,14 +38,11 @@ class Crawler():
 
 
     def set_options(self, options={}):
-        """
-        TODO: Allow setting options for the crawler (probably based on reading 
-        the module config).
-        - Sleep length customization (currently 0.2)
-        - File size download
-        - 
-        """
-        self.options = options
+        """Sets options for a module."""
+        if "TOTAL_REQUESTS_LIMITATION" in options:
+            self.TOTAL_REQUESTS_LIMITATION = options["TOTAL_REQUESTS_LIMITATION"]
+        if "DELAY" in options:
+            self.DELAY = options["DELAY"]
 
     
     def mprint(self, string):
@@ -77,7 +75,7 @@ class Crawler():
             self.mprint("Number of requests in the queue: %s" % len(self.requests_queue))
             self.mprint("Number of requests filtered: %s" % len(self.requests_filtered_out))
             self.mprint("Number of requests failed: %s" % len(self.requests_failed))
-            sleep(0.2)
+            sleep(self.DELAY)
 
             # Prevent infinite looping in e.g. calendar app by hard limiting 
             # total number of requests.

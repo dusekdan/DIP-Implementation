@@ -1,0 +1,25 @@
+{
+    "/GLOBAL/": {},
+    "MisconfChecker": {
+        "DELAY": 0.1,
+        "RANDOMIZE_SELECTION": "True",
+        "MAX_REQUESTS": 1000
+    },
+    "RequestMiner": {
+        "DELAY": 0.1,
+        "CANARY_LENGTH": 5,
+        "MAX_REFLECTION_REQUESTS": 15,
+        "URLPARAM_DISCOVERY_HEURISTICS": "START_PAGE",
+        "MAX_ACCEPTED_URL_LENGTH": 2000
+    },
+    "XSSFinder": {
+        "DELAY": 0.1
+    },
+    "SiteCopier": {
+        "TOTAL_REQUESTS_LIMITATION": 1000
+    },
+    "TokenFinder": {
+        "ENTROPY_TRESHOLD": 4.5,
+        "MIN_TOKEN_LEN": 20
+    }
+}

@@ -62,6 +62,14 @@ class TokenFinder():
         }
 
 
+    def set_options(self, options):
+        """Sets options for a module."""
+        if "ENTROPY_TRESHOLD" in options:
+            self.ENTROPY_TRESHOLD = options["ENTROPY_TRESHOLD"]
+        if "MIN_TOKEN_LEN" in options:
+            self.MIN_TOKEN_LEN = options["MIN_TOKEN_LEN"]
+
+
     def get_dependencies(self):
         """Provides information about the module's dependency requirements."""
         return self.dependencies

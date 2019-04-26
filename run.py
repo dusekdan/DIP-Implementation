@@ -24,6 +24,7 @@ else:
 # 1 - Discover modules
 
 ML = ModuleLoader(MODULES_FOLDER)
+options = ML.load_module_options()
 instantiated_modules = ML.discover_modules()
 DBG.discovered_modules()
 
@@ -42,6 +43,9 @@ for module_name, instance in independent.items():
     physical_artifacts = instance.leaves_physical_artifacts()
     if physical_artifacts:
         utils.prepare_module_folder(module_name)
+
+    if module_name in options:
+        instance.set_options(options[module_name])
 
     exit_flag = instance.execute(run_target)
     results = instance.get_results()
@@ -78,6 +82,10 @@ while try_again:
                 break
         
         if can_run:
+            
+            if module_name in options:
+                instance.set_options(options[module_name])
+            
             instance.provide_results(module_results)
             exit_flag = instance.execute(run_target)
             results = instance.get_results()

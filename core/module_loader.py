@@ -1,12 +1,14 @@
-import os
+import os, json
 import importlib
 
 class ModuleLoader:
+
 
     def __init__(self, modules_folder):
         print("Initialized module loader")
         self.modules_folder = modules_folder
         self.available_dependencies = []
+
 
     def discover_modules(self, do_not_import = False):
         """
@@ -41,7 +43,8 @@ class ModuleLoader:
             self.available_dependencies.append(module)
 
         return instantiated_modules
-    
+
+
     def classify_modules(self, modules):
         """
         Classifies modules into following categories:
@@ -53,7 +56,7 @@ class ModuleLoader:
         to be run.
         """
         NO_DEPENDENCIES = []
-       
+
         independent = {}
         satisfiable = {}
         nonrunnable = {}
@@ -84,6 +87,7 @@ class ModuleLoader:
 
         return (independent, satisfiable, nonrunnable)
 
+
     def show_module_loading_errors(self, errors):
         """Prints out information about why modules could not be imported/run."""
         if (len(errors.keys()) > 0):
@@ -91,3 +95,23 @@ class ModuleLoader:
             for module_name, error in errors.items():
                 print(" \tName: %s \tReason: %s" % (module_name, error))
             print()
+
+    
+    def load_module_options(self):
+        """
+        Reads per-module run options and propagates the information to 
+        corresponding modules.
+        """
+        options_file = "options.json"
+        module_options = {}
+        if os.path.exists(options_file):
+            try:
+                with open(options_file, 'r') as f:
+                    data = json.load(f)
+                    for module_name, options in data.items():
+                        module_options[module_name] = options
+            except IOError as e:
+                print("[ERROR][ModuleLoader] Options file is not accessible.")
+                print(repr(e))
+
+        return module_options

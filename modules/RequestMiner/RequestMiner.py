@@ -387,7 +387,7 @@ class RequestMiner():
         """
         Select which URL will be used as a base URL against which the query 
         parameters discovery will be executed.
-        FUTURE: Selection heuristics can be influenced by the set_options
+
         Available heuristics:
         - (A) Base URL (main page)
         - (B) Page with the highest amount of query parameters (NotImplemented)
@@ -570,6 +570,20 @@ class RequestMiner():
                 "hidden_params": self.hidden_params,
             }
         }
+
+
+    def set_options(self, options):
+        """Sets options for a module."""
+        if "DELAY" in options:
+            self.DELAY = options["DELAY"]
+        if "CANARY_LENGTH" in options:
+            self.CANARY_LENGTH = options["CANARY_LENGTH"]
+        if "MAX_REFLECTION_REQUESTS" in options:
+            self.MAX_REFLECTION_REQUESTS = options["MAX_REFLECTION_REQUESTS"]
+        if "URLPARAM_DISCOVERY_HEURISTICS" in options:
+            self.URLPARAM_DISCOVERY_HEURISTICS = options["URLPARAM_DISCOVERY_HEURISTICS"]
+        if "MAX_ACCEPTED_URL_LENGTH" in options:
+            self.MAX_ACCEPTED_URL_LENGTH = options["MAX_ACCEPTED_URL_LENGTH"]
 
 
     def get_dependencies(self):
