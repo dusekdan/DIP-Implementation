@@ -16,7 +16,7 @@
         "DELAY": 0.1
     },
     "SiteCopier": {
-        "TOTAL_REQUESTS_LIMITATION": 1000
+        "TOTAL_REQUESTS_LIMITATION": 750
     },
     "TokenFinder": {
         "ENTROPY_TRESHOLD": 4.5,
