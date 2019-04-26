@@ -53,12 +53,14 @@ class PresentationHelper():
         }
 
 
-    def replace_template_wildcards(self, template, title, parts):
+    def replace_template_wildcards(self, template, title, parts, target):
         """Replaces template wildards with their respective contents."""
         return template.replace(
             '{REPORT_TITLE}', title
             ).replace(
                 '{PARTS}', parts
+            ).replace(
+                '{REPORT_TARGET}', utils.encode_for_html(target)
             )
 
 
@@ -78,7 +80,7 @@ class PresentationHelper():
         )
 
 
-    def generate_report(self, style_type):
+    def generate_report(self, style_type, target):
         """
         Generates report in output format as specified by 'style_type' 
         parameter. At the moment HTML only.
@@ -126,7 +128,7 @@ class PresentationHelper():
                     parts_render += render_part
             
             final_report = self.replace_template_wildcards(template, 
-            self.report_title, parts_render)
+            self.report_title, parts_render, target)
 
             report_path = os.path.join("reports", cfg.CURRENT_RUN_ID + ".htm")
             with open(report_path, 'w', errors="ignore") as f:

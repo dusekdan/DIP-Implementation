@@ -122,7 +122,7 @@ for module_name, instance in modules_done.items():
     PH.add_part(module_name, presentable["description"], presentable["content"], presenter.get_importance())
 
 dprint(" [I] Results provided, I will now generate template.")
-PH.generate_report(report_type)
+PH.generate_report(report_type, run_target)
 
 
 
