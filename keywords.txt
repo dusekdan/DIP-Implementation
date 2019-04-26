@@ -1,0 +1,3 @@
+password
+passwd
+/etc/passwd
