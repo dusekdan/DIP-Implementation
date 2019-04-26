@@ -78,7 +78,7 @@ class Presenter():
             # Print out table of failed, filtered and requested links
             table_1 = """
             <h5>Failed & Filtered targets</h5>
-            <table>"""
+            <table style='table-layout: fixed;width: 100%;'>"""
 
             if number_of_failed_requests > 0:
                 table_1 += """
@@ -88,7 +88,7 @@ class Presenter():
                 <tr>
                 """
                 for url in results["failedUrls"]:
-                    table_1 += "<tr><td>%s</td></tr>" % utils.encode_for_html(url)
+                    table_1 += "<tr><td style='word-wrap:break-word;overflow-wrap:break-word;'>%s</td></tr>" % utils.encode_for_html(url)
 
             table_1 += """
             <tr>
@@ -97,7 +97,7 @@ class Presenter():
             """
 
             for url in results["filteredUrls"]:
-                table_1 += "<tr><td>%s</td></tr>" % utils.encode_for_html(url)
+                table_1 += "<tr><td style='word-wrap:break-word;overflow-wrap:break-word;'>%s</td></tr>" % utils.encode_for_html(url)
             
             table_1 += "</table>"
 
@@ -105,14 +105,14 @@ class Presenter():
 
             table_2 = """
             <h5>Successfully Sent Requests</h5>
-            <table>
+            <table style='table-layout: fixed;width: 100%;'>
                 <tr>
                     <th>Requests that successfully reached the target</th>
                 </tr>
             """
 
             for url in results["crawledUrls"]:
-                table_2 += "<tr><td>%s</td></tr>" % utils.encode_for_html(url)
+                table_2 += "<tr><td style='word-wrap:break-word;overflow-wrap:break-word;'>%s</td></tr>" % utils.encode_for_html(url)
             
             table_2 += "</table>"
             
