@@ -12,7 +12,19 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 class MisconfChecker():
+    """
+        MisconfChecker looks for VCS and IIS misconfiguration on a target, such
+        as enabled directory listing, leftover .git/.svn/.hg files and also
+        hidden resources that are available, but not linked from the app.
 
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
     def __init__(self):
         self.dependencies = [

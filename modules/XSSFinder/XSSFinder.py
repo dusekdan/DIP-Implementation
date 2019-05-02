@@ -12,6 +12,18 @@ from requests.packages.urllib3.util.retry import Retry
 from . import Presenter as p
 
 class XSSFinder():
+    """
+        XSSFinder module takes reflected and hidden parameters as its input
+        and then checks these parameters on reflected XSS vulnerability.
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
 
     def __init__(self):

@@ -3,6 +3,19 @@ from . import Presenter as p
 
 
 class SiteCopier():
+    """
+        SiteCopier module ensures a target application is properly crawled
+        and that its interactions with a target are available for other modules
+        to use.        
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
 
     def __init__(self):

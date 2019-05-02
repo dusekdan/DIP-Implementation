@@ -3,6 +3,18 @@ from core import utils as utils
 
 
 class Presenter():
+    """
+        This class is responsible for presenting results of 
+        the TokenFinder module.
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
 
     def __init__(self, results):

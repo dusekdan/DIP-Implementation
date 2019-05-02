@@ -10,6 +10,17 @@ from time import sleep
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 
 class DLDetector():
+    """
+        Responsible for detecting enabled directory listing on a target.
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
     def __init__(self, urls, target):
         self.urls = urls

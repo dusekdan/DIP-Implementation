@@ -14,7 +14,15 @@ from bs4 import BeautifulSoup
 
 class Crawler():
     """
-    Responsible for crawling the target application.
+        Responsible for crawling the target application.
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
     """
 
 

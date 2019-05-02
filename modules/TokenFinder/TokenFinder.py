@@ -8,6 +8,20 @@ from core import constants as Consts
 from . import Presenter as p
 
 class TokenFinder():
+    """
+        TokenFinder module searches for high-entropy strings contained in
+        the target application's source code, hoping to discover leaked
+        access tokens and secrets (typically repesented by strings with
+        high entropy).        
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
 
     def __init__(self):

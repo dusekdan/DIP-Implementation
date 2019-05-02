@@ -2,6 +2,17 @@ import os, json
 import importlib
 
 class ModuleLoader:
+    """
+        Responsible for loading modules that are to be run by ReconJay tool.
+
+        |>  This software is a part of the master thesis: 
+        |>  "Web Application Penetration Testing Automation"
+        |>  Brno, University of Technology, 2019
+        |
+        |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+        |>  Contact: dusekdan@gmail.com
+        |>  https://danieldusek.com
+    """
 
 
     def __init__(self, modules_folder):

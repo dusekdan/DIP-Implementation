@@ -1,3 +1,17 @@
+"""
+
+    ReconJay Tool for non-destructive and non-permanent trace leaving 
+    penetration testing.
+
+    |>  This software is a part of the master thesis: 
+    |>  "Web Application Penetration Testing Automation"
+    |>  Brno, University of Technology, 2019
+    |
+    |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+    |>  Contact: dusekdan@gmail.com
+    |>  https://danieldusek.com
+
+"""
 import os
 import sys
 import importlib
@@ -19,7 +33,8 @@ utils.prepare_tool_environment(cfg.CURRENT_RUN_ID)
 if len(sys.argv) >= 2:
     run_target = sys.argv[1]
 else:
-    dprint(" [I] TARGET NOT SPECIFIED. FALLING BACK TO DD.COM")
+    dprint(" [!] Target URL was not specified. The tool will run against danieldusek.com")
+    dprint(" [!] Pass the target application's URL as the first parameter (python ReconJay.py https://target.url)")
     run_target = "https://danieldusek.com"
 
 # 1 - Discover modules
@@ -29,7 +44,7 @@ options = ML.load_module_options()
 instantiated_modules = ML.discover_modules()
 DBG.discovered_modules()
 
-# 2 - Classify modules by its ability to be run
+# 2 - Classify modules by their ability to be run
 
 independent, satisfiable, nonrunnable = ML.classify_modules(instantiated_modules)
 DBG.classified_modules(independent, satisfiable, nonrunnable)

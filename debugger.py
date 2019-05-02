@@ -1,3 +1,16 @@
+"""
+
+    ReconJay Tool for non-destructive and non-permanent trace leaving 
+    penetration testing - auxiliary debugging class.
+
+    |>  This software is a part of the master thesis: 
+    |>  "Web Application Penetration Testing Automation"
+    |>  Brno, University of Technology, 2019
+    |
+    |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
+    |>  Contact: dusekdan@gmail.com
+    |>  https://danieldusek.com
+"""
 import os, sys
 import types
 import core.config as cfg
