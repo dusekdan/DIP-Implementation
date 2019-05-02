@@ -7,11 +7,9 @@ from core.helpers import URLHelper
 from requests.models import PreparedRequest
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-
-from . import Presenter as p
-
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
 from time import sleep
+from . import Presenter as p
 
 
 class RequestMiner():

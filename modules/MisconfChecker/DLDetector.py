@@ -1,13 +1,11 @@
-import requests
 import os
+import requests
 import core.config as cfg
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from core.helpers import URLHelper
-
-from time import sleep
-
 from urllib.parse import urlparse, urljoin, parse_qs, parse_qsl
+from time import sleep
 
 class DLDetector():
     """

@@ -17,8 +17,8 @@ import core.config as cfg
 from core import utils 
 from core.helpers import PresentationHelper
 from core.module_loader import ModuleLoader
-
 from debugger import DEBUG
+
 DBG = DEBUG(DEBUG_ENABLED=True)
 dprint = DBG.dprint
 fprint = DBG.fprint

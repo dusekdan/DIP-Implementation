@@ -1,10 +1,8 @@
 import os
 import math
-
 import core.utils as utils
 import core.config as cfg
 from core import constants as Consts
-
 from . import Presenter as p
 
 class TokenFinder():

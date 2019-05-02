@@ -1,14 +1,12 @@
 import os, re
 import requests
 from time import sleep
-
 import core.utils as utils
 import core.config as cfg
 from core import constants as Consts
 from core.helpers import URLHelper
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-
 from . import Presenter as p
 
 class XSSFinder():

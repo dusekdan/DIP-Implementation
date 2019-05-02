@@ -1,15 +1,12 @@
 import os
 import requests
-
 import core.config as cfg
-
 from core.helpers import URLHelper
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 from . import Presenter as p
 from . import DLDetector as _DLD
 from . import HRLocator as _HRL
-
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 class MisconfChecker():
     """
