@@ -1,5 +1,4 @@
 """
-
     ReconJay Tool for non-destructive and non-permanent trace leaving 
     penetration testing.
 
@@ -10,7 +9,6 @@
     |>  Author: Daniel Dušek (@dusekdan - github, gitlab, twitter)
     |>  Contact: dusekdan@gmail.com
     |>  https://danieldusek.com
-
 """
 import os
 import sys

@@ -1,5 +1,4 @@
 """
-
     ReconJay Tool for non-destructive and non-permanent trace leaving 
     penetration testing - auxiliary debugging class.
 
