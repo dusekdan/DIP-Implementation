@@ -28,7 +28,6 @@ class Presenter():
         Returns a dict of content ready for presentation and description of 
         the part that is going to be presented. Style specified by parameter.
         """
-        print("[%s] Presenter ready and working..." % self.module_name)
         self.style = presentation_style
 
         return {

@@ -1,6 +1,8 @@
 import os
 import requests
 
+import core.config as cfg
+
 from core.helpers import URLHelper
 from . import Presenter as p
 from . import DLDetector as _DLD
@@ -38,12 +40,23 @@ class MisconfChecker():
     def mprint(self, string):
         """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
+        self.fprint(string)
+
+    
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        message = " [%s]: %s" % (self.module_name, string)
+        try:
+            with open(file_name, 'a') as f:
+                f.write(message + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
 
 
     def execute(self, param):
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("Checking IIS/VCS misconfigurations...")
         self.target = param
-        self.mprint("Executing %s module!" % self.module_name)
 
         # Hidden resources & VCS leftover resources discovery
         HRL = _HRL.HiddenResourcesLocator(self.target)
@@ -61,11 +74,15 @@ class MisconfChecker():
         self.directory_listing = DLD.detect_directory_listing()
 
         # Debug only outputs.
-        self.mprint("Discovered following resources: %s" % self.resources)
-        self.mprint("Discovered following VCS resources: %s" % self.vcs_resources)
-        self.mprint("Detected directory listing in: %s" % self.directory_listing)
+        self.fprint("Discovered following resources: %s" % self.resources)
+        self.fprint("Discovered following VCS resources: %s" % self.vcs_resources)
+        self.fprint("Detected directory listing in: %s" % self.directory_listing)
 
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("Discovered resources: %s | VCS: %s | Directory Listing: %s" %(
+            len(self.resources),
+            len(self.vcs_resources),
+            len(self.directory_listing)))
+        self.mprint("Misconfiguration checks done.")
 
 
     def provide_results(self, results_structure):

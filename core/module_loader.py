@@ -5,7 +5,6 @@ class ModuleLoader:
 
 
     def __init__(self, modules_folder):
-        print("Initialized module loader")
         self.modules_folder = modules_folder
         self.available_dependencies = []
 

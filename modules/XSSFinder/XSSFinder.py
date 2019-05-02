@@ -32,11 +32,21 @@ class XSSFinder():
         print(" [%s]: %s" % (self.module_name, string))
 
 
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        message = " [%s]: %s" % (self.module_name, string)
+        try:
+            with open(file_name, 'a') as f:
+                f.write(message + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
+
+
     def execute(self, param):
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("Looking for XSS...")
         self.target = param
 
-        self.mprint("Looking for XSS...")
         group1, group2 = self.get_reflected_params()
 
         discovered_xss = []
@@ -48,10 +58,10 @@ class XSSFinder():
             for url in meta["reflects_on"]:
                 discovered_xss += self.reflects_XSS(url, param)
         
-        self.mprint(discovered_xss)
+        self.fprint(discovered_xss)
         self.results = discovered_xss
 
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("XSS search done...")
 
 
     def reflects_XSS(self, url, param):
@@ -65,7 +75,7 @@ class XSSFinder():
 
         target = self.URLHelper.update_query_string_param(url, param, payload)
 
-        self.mprint("XSS-Checking: %s" % target)
+        self.fprint("XSS-Checking: %s" % target)
 
         try:
             # Acquire response for given payload for further inspection.
@@ -94,7 +104,7 @@ class XSSFinder():
 
                 # Unsanitized reflection requires no more testing.
                 if protection_level == "None":
-                    self.mprint("Parameter %s is not protected against XSS." % param)
+                    self.mprint("Parameter %s is vulnerable to XSS." % param)
                     discovered.append(
                         self.craft_discovered_XSS_object(url, param, "None")
                     )
@@ -114,8 +124,8 @@ class XSSFinder():
                 target = self.URLHelper.update_query_string_param(url, param, detector_string)
                 r = self._retry_session().get(target)
             except requests.exceptions.RequestException:
-                print("Exception occurred when sending a request.")
-                print(e)
+                self.mprint("[ERROR] Exception occurred when sending a request.")
+                self.fprint(repr(e))
                 return []
 
             if detector_string in r.text:

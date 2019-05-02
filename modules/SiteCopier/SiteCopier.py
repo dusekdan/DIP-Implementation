@@ -18,14 +18,13 @@ class SiteCopier():
 
 
     def execute(self, param):
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("Starting crawling operations...")
         self.mprint("Target acquired: %s" % param)
 
         self.crawler.set_target(param)
         self.parsible_artifacts = self.crawler.crawl()
-        self.mprint("Crawler work finished.")
 
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("Crawler work finished. Goodbye!")
 
 
     def get_dependencies(self):

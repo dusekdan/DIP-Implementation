@@ -48,6 +48,29 @@ class Crawler():
     def mprint(self, string):
         """Module-specific print wrapper."""
         print(" [SiteCopier]: %s" % string)
+        self.fprint(string)
+
+
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        message = " [%s]: %s" % ("SiteCopier", string)
+        try:
+            with open(file_name, 'a') as f:
+                f.write(message + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
+
+
+    def log_target_crawling(self, site, done, in_queue, filtered, failed):
+        """Writes to run.log file information about crawling progress."""
+        target_line = "Requested: %s" % site
+        status_line = "DONE: %s | QUEUED: %s | FILTERED: %s | FAILED: %s" % (
+            done, in_queue, filtered, failed
+        )
+
+        self.fprint(target_line)
+        self.fprint(status_line)
 
 
     def crawl(self):
@@ -58,8 +81,6 @@ class Crawler():
             # Make a request on the last (first if single) request in the queue
             target = self.requests_queue.pop()
             self.current_target = target
-            self.mprint("Requesting: %s" % target)
-            
             self.issue_request(target)
             
             # Move finished requests to "requests done"
@@ -70,18 +91,27 @@ class Crawler():
             # kind of a request (randomly smaller looping chance).
             random.shuffle(self.requests_queue)
 
-            # Execution will continue as long as there is a request in the queue
-            self.mprint("Number of requests done: %s" % len(self.requests_done))
-            self.mprint("Number of requests in the queue: %s" % len(self.requests_queue))
-            self.mprint("Number of requests filtered: %s" % len(self.requests_filtered_out))
-            self.mprint("Number of requests failed: %s" % len(self.requests_failed))
+            # Log crawling information into the file + advertise current state
+            # on every few requests.
+            self.log_target_crawling(target, 
+            len(self.requests_done), len(self.requests_queue), 
+            len(self.requests_filtered_out), len(self.requests_failed)
+            )
+            requests_attempted = len(self.requests_done)+len(self.requests_failed)
+            if requests_attempted % 50 == 0:
+                self.mprint("%s requests sent (Successfully: %s | Failed: %s)" % (
+                    requests_attempted,
+                    len(self.requests_done), len(self.requests_failed)
+                ))
+
+
             sleep(self.DELAY)
 
             # Prevent infinite looping in e.g. calendar app by hard limiting 
             # total number of requests.
             if self.TOTAL_REQUESTS_LIMITATION == len(self.requests_done):
                 self.mprint(
-                "TOTAL_REQUESTS_LIMITATION (%s) REACHED" % self.TOTAL_REQUESTS_LIMITATION
+                "TOTAL_REQUESTS_LIMITATION (%s) reached. Crawling will not continue." % self.TOTAL_REQUESTS_LIMITATION
                 )
                 break
 
@@ -107,11 +137,11 @@ class Crawler():
                 response = self._retry_session().get(target)
                 self.process_response(target, response)
             else:
-                self.mprint("Determined that I should not continue ")
+                self.fprint("Determined that I should not continue ")
 
         except requests.exceptions.RequestException as e:
-            self.mprint("[ERROR] Request to %s failed after retrying. Adding to failed requests." % target)
-            print(repr(e))
+            self.mprint("[ERROR] Request to %s failed after retrying. Adding to failed requests. Exception logged into run.log file." % target)
+            self.fprint(repr(e))
             self.requests_failed.append(target)
 
 
@@ -121,9 +151,6 @@ class Crawler():
         not. In the future, parameters to decide this should be configurable.
         
         At the moment: Download binary files smaller than 20 MB.
-
-        TODO: Allow specification of the filesize and filetype that should be
-        downloaded. Possibly through self.set_options() member.
         """
         request_size_treshold = 20000000
 
@@ -138,11 +165,11 @@ class Crawler():
         
         if utils.is_binary_mime_type(content_type):
             if 'content-length' not in headers:
-                self.mprint("False: content-length not in headers.")
+                self.fprint("False: content-length not in headers.")
                 return False
 
             if int(headers['content-length']) > request_size_treshold:
-                self.mprint("False: CL header exceeded limit: %s" % int(headers['Content-Length']))
+                self.fprint("False: CL header exceeded limit: %s" % int(headers['Content-Length']))
                 return False
         return True
 
@@ -169,22 +196,22 @@ class Crawler():
 
             elif content_type == 'text/css':
 
-                self.mprint("No link parsers for CSS files implemented yet.")
+                self.fprint("No link parsers for CSS files implemented yet.")
 
             elif (
                 content_type == 'application/javascript'
                 or content_type == 'application/json'
             ):
 
-                self.mprint("No link parsers for JS/JSON files implemented yet.")
+                self.fprint("No link parsers for JS/JSON files implemented yet.")
 
             else:
 
-                self.mprint("Content-Type %s has no parsers.")
+                self.fprint("Content-Type %s has no parsers.")
 
         else:
 
-            self.mprint("Response is binary, no links will be extracted.")
+            self.fprint("Response is binary, no links will be extracted.")
 
 
     def process_resource_links(self, link_group):

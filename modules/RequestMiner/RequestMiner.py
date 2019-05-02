@@ -57,10 +57,22 @@ class RequestMiner():
     def mprint(self, string):
         """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
+        self.fprint(string)
+
+    
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        message = " [%s]: %s" % (self.module_name, string)
+        try:
+            with open(file_name, 'a') as f:
+                f.write(message + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
     
 
     def execute(self, param):
-        self.mprint("===================================%s===================================" % self.module_name)
+        self.mprint("Starting request mining operations...")
         self.target = param
 
         # Existing parameters & headers discovery
@@ -109,7 +121,7 @@ class RequestMiner():
                 self.discovered_params[param_name]["reflects"] = True
                 self.discovered_params[param_name]["reflects_on"] = reflections
             else:
-                self.mprint("Nope, Param %s does not reflect." % param_name)
+                self.fprint("Nope, Param %s does not reflect." % param_name)
 
         # FUTURE: Evaluate security standing for discovered headers (will require
         # keeping values of the headers (not currently doing that... aaah) - or
@@ -117,7 +129,6 @@ class RequestMiner():
         # Maybe this functionality will fit better under SSL eval module?
         
         self.mprint("Request mining completed....")
-        self.mprint("===================================%s===================================" % self.module_name)
 
 
     def discover_hidden_url_parameters(self, target):
@@ -157,6 +168,7 @@ class RequestMiner():
         
         except requests.exceptions.RequestException as e:
             self.mprint("[ERROR][Preflight] Mining request failed (%s). Mining ops terminated." % e)
+            self.fprint(repr(e))
             return []
 
         hidden_parameters = self.mine_hidden_parameters(discovery_urls, 
@@ -204,7 +216,7 @@ class RequestMiner():
                     self.mprint("Found something... will try to pinpoint the parameter.")
                     effective_params = self.identify_parameter(url, ref_ok, ref_pne)
                     if effective_params:
-                        self.mprint("Determined: %s" % effective_params)
+                        self.mprint("\t |-> Determined cause: %s" % effective_params)
                         discovered_params += effective_params
 
                     for name, value in canaries.items():
@@ -215,6 +227,7 @@ class RequestMiner():
 
             except requests.exceptions.RequestException as e:
                 self.mprint("[ERROR][Discovery] Mining request failed (%s). Mining ops terminated." % e)
+                self.fprint(repr(e))
                 break
             
             # If first run-through discovers too many reflected parameters, all
@@ -265,58 +278,11 @@ class RequestMiner():
                 sleep(self.DELAY)
             
             except requests.exceptions.RequestException as e:
-                self.mprint("[ERROR][Pinpointing] Mining request failed (%s). Mining ops terminated." % e)
+                self.mprint("[ERROR][Pinpointing] Mining request failed (%s). Mining ops terminated." % url)
+                self.fprint(repr(e))
                 return None
 
         return effective_params
-
-
-    def identify_parameter_OBSOLETE(self, url, ok, notok):
-        """
-        Identifies which of the parameters in URL is responsible for detected
-        change in the way target application replied. Kinda request heavy.
-        FUTURE: Figure how to do this efficiently with interval splitting.
-        FUTURE: Make it work / Use strip_tags()-like logic to compare plaintext.
-        """
-        # Intersection of params in URL and params from our parameter list.
-        added_params = list(
-            set(
-                list(parse_qs(urlparse(url).query).keys())
-            ) & set(self.url_discovery_parameters)
-        )
-        to_remove = random.choice(added_params)
-
-        for _ in range(len(added_params)):
-            removed = self.URLHelper.remove_query_string_param(url, to_remove)
-            try:
-                r = self._retry_session().get(removed)
-
-                ci = self.rate_indicators(
-                    r.status_code, ok["code"], notok["code"]
-                )
-                hi = self.rate_indicators(
-                    len(r.headers), len(ok["headers"]), len(notok["headers"])
-                )
-                ti = self.rate_indicators(
-                    len(r.text), len(ok["text"]), len(notok["text"])
-                )
-
-                # This means that the parameter to_remove made the change
-                # If it's >0, then the remaining parameters made the change
-                if sum([ci, hi, ti]) == 0:
-                    return to_remove
-                elif sum([ci, hi, ti]) > 0:
-                    url = removed
-
-                added_params.remove(to_remove)
-                if len(added_params) != 0:
-                    to_remove = random.choice(added_params)
-
-                sleep(self.DELAY)
-
-            except requests.exceptions.RequestException as e:
-                self.mprint("[ERROR] Mining request failed (%s). Mining ops terminated." % e)
-                return None
 
 
     def rate_indicators(self, current, ok, pne):
@@ -356,7 +322,7 @@ class RequestMiner():
                 self.url_discovery_parameters = param_list
         except IOError as e:
             self.mprint("[ERROR] Unable to open payloads/parameters.txt.")
-            self.mprint(e)
+            self.fprint(e)
             return
         
         for param in param_list:
@@ -416,7 +382,7 @@ class RequestMiner():
             # Pick exactly 1 candidate from each group
             current_target = self.URLHelper.replace_parameter_value(values[0],
                 parameter_name, canary)
-            self.mprint("Checking candidate: %s" % current_target)
+            self.fprint("Checking candidate: %s" % current_target)
 
             if reflection_requests <= self.MAX_REFLECTION_REQUESTS:
                 try:
@@ -425,9 +391,10 @@ class RequestMiner():
                     if canary in r.text:
                         reflects_on.append(values[0])
                 except requests.exceptions.RequestException as e:
-                    self.mprint("[ERROR] Mining request failed (%s)." % e)
+                    self.mprint("[ERROR] Mining request failed (%s)." % parameter_name)
+                    self.fprint(repr(e))
             else:
-                self.mprint("REFLECTION CHECK TERMINATED: TOO MANY REQUESTS.")
+                self.mprint("MAX_REFLECTION_REQUESTS (%s) reached: Checking terminated." % self.MAX_REFLECTION_REQUESTS)
                 break
         
         return reflects_on
@@ -514,11 +481,11 @@ class RequestMiner():
                     if len(parts) >= 2:
                         headers.append(parts[0].lower())
         except FileNotFoundError as e:
-            self.mprint("[WARNING][404] Skipping %s" % response_file)
+            self.fprint("[WARNING][404] Skipping %s" % response_file)
         except IOError as e:
             self.mprint("[ERROR] Unable to read response file. Rights?")
             self.mprint("File: %s" % response_file)
-            self.mprint(e)
+            self.fprint(e)
         
         return headers
 

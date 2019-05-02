@@ -1,5 +1,6 @@
-import sys
+import os, sys
 import types
+import core.config as cfg
 
 class DEBUG(object):
 
@@ -31,16 +32,26 @@ class DEBUG(object):
             print(string)
 
 
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        try:
+            with open(file_name, 'a') as f:
+                f.write(string + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
+
+
     def discovered_modules(self):
         all_modules = sys.modules.keys()
-        self.dprint("[D] Discovered modules:")
+        self.fprint(" [D] Discovered modules:")
         for module_name in all_modules:
             if module_name.startswith('modules.') and module_name.count('.') == 1:
-                self.dprint("\t|-> %s" % module_name)
+                self.fprint("\t|-> %s" % module_name)
 
 
     def classified_modules(self, independent, satisfiable, nonrunnable):
-        self.dprint("[D] Module classification done.")
+        self.dprint(" [D] Module classification done.")
 
         self.dprint("  Independent modules: ")
         for module_name, instance in independent.items():
@@ -50,9 +61,10 @@ class DEBUG(object):
         for module_name, instance in satisfiable.items():
             self.dprint("\t|-> %s" % module_name)
         
-        self.dprint("  Non-runnable modules: ")
-        for module_name, reason in nonrunnable.items():
-            self.dprint("\t|-> %s (%s)" % (module_name, reason))
+        if len(nonrunnable) > 0:
+            self.dprint("  Non-runnable modules: ")
+            for module_name, reason in nonrunnable.items():
+                self.dprint("\t|-> %s (%s)" % (module_name, reason))
 
 
     def importing_module(self, module_name):

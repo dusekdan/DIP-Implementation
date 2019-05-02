@@ -1,5 +1,6 @@
 import os, random
 import requests
+import core.config as cfg
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from urllib.parse import urlparse
@@ -9,6 +10,7 @@ class HiddenResourcesLocator():
 
     def __init__(self, target):
         self.target = target
+        self.module_name = "MisconfChecker"
         self.parts = urlparse(self.target)
         
         self.resource_list = self.obtain_list_from_payload_file("resources.txt")
@@ -53,7 +55,7 @@ class HiddenResourcesLocator():
                     
                     resource_list_cp.remove(rnd_resource)
                 else:
-                    self.mprint("[INFO] Resource enumeration terminated, MAX REQUESTS (%s) reached." % self.MAX_REQUESTS)
+                    self.mprint("Resource enumeration terminated, MAX REQUESTS (%s) reached." % self.MAX_REQUESTS)
                     break
         else:
             # When no randomization applies, target first N resources.
@@ -62,7 +64,7 @@ class HiddenResourcesLocator():
                     self.request_resource(resource)
                     requests_done += 1
                 else:
-                    self.mprint("[INFO] Resource enumeration terminated, MAX REQUESTS (%s) reached." % self.MAX_REQUESTS)
+                    self.mprint("Resource enumeration terminated, MAX REQUESTS (%s) reached." % self.MAX_REQUESTS)
                     break
         
         self.locate_vcs_leftovers()
@@ -90,7 +92,7 @@ class HiddenResourcesLocator():
                         self.mprint("Discovered: %s, but the code was %s so this discovery will not be put into the report." % (url, r.status_code))
         except requests.exceptions.RequestException as e:
             self.mprint("[ERROR] Unable to send resource discovery request for %s" % resource)
-            print(repr(e))
+            self.fprint(repr(e))
 
 
     def obtain_list_from_payload_file(self, file_name):
@@ -103,10 +105,10 @@ class HiddenResourcesLocator():
             return [x.replace('\n', '') for x in resource_list]
         except FileNotFoundError as e:
             self.mprint("[ERROR] Unable to retrieve file: %s " % path)
-            print(repr(e))
+            self.fprint(repr(e))
         except IOError as e:
             self.mprint("[ERROR] Unable to retrieve file: %s " % path)
-            print(repr(e))
+            self.fprint(repr(e))
         return []
 
 
@@ -137,7 +139,7 @@ class HiddenResourcesLocator():
                         self.discovered_vcs_resources.append(url)
             except requests.exceptions.RequestException as e:
                 self.mprint("[ERROR] Unable to send resource discovery request for %s" % resource)
-                print(repr(e))
+                self.fprint(repr(e))
 
 
     def classify_results_by_severity(self, resources):
@@ -148,6 +150,18 @@ class HiddenResourcesLocator():
     def mprint(self, string):
         """Module-specific print wrapper."""
         print(" [%s]: %s" % ("MisconfChecker", string))
+        self.fprint(string)
+
+    
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        message = " [%s]: %s" % (self.module_name, string)
+        try:
+            with open(file_name, 'a') as f:
+                f.write(message + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
 
 
     

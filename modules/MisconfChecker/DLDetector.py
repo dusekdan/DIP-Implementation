@@ -1,4 +1,6 @@
 import requests
+import os
+import core.config as cfg
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from core.helpers import URLHelper
@@ -35,13 +37,13 @@ class DLDetector():
         for directory_address in self.virtual_dirs:
             url = parts.scheme + '://' + parts.netloc + '/' + directory_address
             
-            self.mprint("Checking: %s" % url)
+            self.fprint("Checking: %s" % url)
             try:
                 r = self._retry_session().get(url)
                 sleep(self.DELAY)
             except requests.exceptions.RequestException as e:
                 self.mprint("[ERROR] Request to %s failed." % url)
-                self.mprint(repr(e))
+                self.fprint(repr(e))
             
             if self.is_dl_reply(r.text):
                 self.directory_listings.append(
@@ -116,7 +118,19 @@ class DLDetector():
     def mprint(self, string):
         """Module-specific print wrapper."""
         print(" [%s]: %s" % (self.module_name, string))
-        
+        self.fprint(string)
+
+
+    def fprint(self, string):
+        """Write into the current log file instead of STDOU."""
+        file_name = os.path.join(".", "output", cfg.CURRENT_RUN_ID, "run.log")
+        message = " [%s]: %s" % (self.module_name, string)
+        try:
+            with open(file_name, 'a') as f:
+                f.write(message + '\n')
+        except IOError:
+            print("[DBG-ERROR] Unable to write to file: %s" % file_name)
+
 
     def _retry_session(self, 
         retries = 5, 

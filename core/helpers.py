@@ -134,6 +134,8 @@ class PresentationHelper():
             with open(report_path, 'w', errors="ignore") as f:
                 f.write(final_report)
 
+            print(" [ALL-DONE] Review the report file in: %s " % report_path)
+
         except FileNotFoundError as e:
             print(" [ERROR] Template %s improperly structured." % style_type)
             print(e)

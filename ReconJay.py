@@ -9,6 +9,7 @@ from core.module_loader import ModuleLoader
 from debugger import DEBUG
 DBG = DEBUG(DEBUG_ENABLED=True)
 dprint = DBG.dprint
+fprint = DBG.fprint
 
 MODULES_FOLDER = "modules"
 cfg.CURRENT_RUN_ID = utils.generate_run_id()
@@ -116,16 +117,10 @@ presentation_options = {
 PH.set_options(presentation_options)
 report_type = "BWFormal"
 for module_name, instance in modules_done.items():
-    dprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, report_type))
+    fprint(" [I] Calling presenter on module: %s, required style: %s" % (module_name, report_type))
     presenter = instance.get_presenter(module_results)
     presentable = presenter.present_content(report_type)
     PH.add_part(module_name, presentable["description"], presentable["content"], presenter.get_importance())
 
-dprint(" [I] Results provided, I will now generate template.")
+dprint(" [I] Result parts obtained from presenters, generating final report...")
 PH.generate_report(report_type, run_target)
-
-
-
-# TODO: X - Optional: Verify loaded modules are in standardized shape (have proper methods etc.)
-# If this todo is not worked in, loading will start to fail once the improperly written modules
-# start to appear. Huge except-catch potential here.
