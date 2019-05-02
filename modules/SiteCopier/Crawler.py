@@ -294,7 +294,7 @@ class Crawler():
             self.URLHelper.normalize(
                 self.URLHelper.order_query_string_params(
                     self.URLHelper.remove_fragment(
-                        self.URLHelper.absolutize(self.target, link)
+                        self.URLHelper.absolutize(self.current_target, link)
                 ))) for link in link_group 
                     if link != None and not link.startswith('#') and link != ''
         ]))
