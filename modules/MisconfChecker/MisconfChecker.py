@@ -69,6 +69,9 @@ class MisconfChecker():
 
         # Hidden resources & VCS leftover resources discovery
         HRL = _HRL.HiddenResourcesLocator(self.target)
+        HRL.RANDOMIZE_SELECTION = self.RANDOMIZE_SELECTION
+        HRL.MAX_REQUESTS = self.MAX_REQUESTS
+        HRL.DELAY = self.DELAY
         self.mprint("Locating hidden resources...")
         self.resources, self.vcs_resources = HRL.discover_hidden_resources()
         
@@ -79,6 +82,7 @@ class MisconfChecker():
             self.resources + self.vcs_resources
         )
         DLD = _DLD.DLDetector(urls_seen, self.target)
+        DLD.DELAY = self.DELAY
         self.mprint("Searching for enabled directory listing...")
         self.directory_listing = DLD.detect_directory_listing()
 
