@@ -114,8 +114,32 @@ class Presenter():
                 
             return info
         else:
-            # Future: Return this in plain-text format.
-            return Consts.EMPTY_STRING
+            info = Consts.EMPTY_STRING
+            if directory_listing_found:
+                info += """
+Enabled directory browsing/listing was discovered in the following locations:
+                """
+
+                for dl_item in results["directory_listing"]:
+                    info += "\t|->%s" % dl_item
+
+            if vcs_leftovers_found:
+                info += """
+Version control files were pushed into the production along with the code. Sometimes, 
+it is possible to recreate the codebase and discover take over the application. See 
+following locations:
+                """
+                for vcs_item in results["vcs_resources"]:
+                    info += "\t|->%s" % vcs_item
+
+            if resources_found:
+                info += """Other interesting <strong>resources</strong> were found in the following locations:
+"""
+
+                for resource in results["hidden_resources"]:
+                    info += "\t|->%s" % resource
+            
+            return info
 
 
     def get_no_data(self):
@@ -126,7 +150,7 @@ class Presenter():
             """
         else:
             return """
-            MisconfChecker did not collect any presentable data.
+MisconfChecker did not collect any presentable data.
             """
 
 
@@ -142,10 +166,9 @@ class Presenter():
             return intro
         else:
             return """
-            MisconfChecker module checks for configuration errors
-            in deployed application, such as enabled directory listing, 
-            VCS structures put into the production and hidden resources that
-            are available, but not meant to be seen.
+MisconfChecker module checks for configuration errors in deployed application, such as enabled directory
+listing, VCS structures put into the production and hidden resources that are available, but not meant to 
+            be seen.
             """
 
 

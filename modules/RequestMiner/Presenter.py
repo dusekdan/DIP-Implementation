@@ -164,8 +164,69 @@ class Presenter():
 
             return table_3 + table_1 + table_2
         else:
-            # FUTURE: Return plain-text data in table
-            return Consts.EMPTY_STRING
+            table_3 = """
+LIST OF DISCOVERED HIDDEN URL PARAMETERS
+
+These parameters were mined on URL: %s
+
+
+Format: Parameter name | Is reflected?
+\n
+            """ % results["hidden_params"]["source_url"]
+
+            discovered_params = results["hidden_params"]["discovered"]
+            reflected_params = results["hidden_params"]["reflected"]
+            
+            for param in discovered_params:
+                
+                if param in reflected_params:
+                    reflected = "Yes"
+                else:
+                    reflected = "No"
+
+                table_3 += "%s | %s \n" % (
+                    param,
+                    reflected
+                )
+            
+            table_3 += "\n"
+
+            
+            
+            table_1 = """
+LIST OF DETECTED URL PARAMETERS IN USE
+
+Format: Parameter name | Details
+\n
+"""
+
+            for param, record in results["existing_params"].items():
+                table_1 += """
+%s | (Format: Source | Values | Is Reflected?) 
+
+""" % param
+                sources = self.classify_param_sources(record["sources"])
+                table_1 += "\n\t"
+                for _, values in sources.items():
+                    table_1 += values[0] + ", "
+                table_1 += "\t"
+                values = ', '.join([str(x) for x in record["values"]])
+                table_1 += "| %s \n" % values
+
+            # Return also a table of discovered headers
+
+            table_2 = """
+LIST OF DETECTED NON-STANDARD HEADERS IN USE
+
+Names: 
+"""
+
+            x_headers = ', '.join([str(x) for x in results["existing_headers"]])
+
+            table_2 += """\n\n
+Previous table does not include required and the most common headers.
+"""
+            return table_3 + table_1 + table_2
 
     
     def classify_param_sources(self, sources):
@@ -203,7 +264,7 @@ class Presenter():
             """
         else:
             return """
-            RequestMiner did not collect any presentable data.
+RequestMiner did not collect any presentable data.
             """
 
 
@@ -218,9 +279,8 @@ class Presenter():
             return intro
         else:
             return """
-            RequestMiner  module goes over the physical artifacts collected
-            by the SiteCopier module and searches them for relevant information
-            regarding the target application security standing.
+RequestMiner  module goes over the physical artifacts collected by the SiteCopier module and searches them
+for relevant information regarding the target application security standing.
             """
 
 

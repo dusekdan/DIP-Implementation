@@ -121,6 +121,7 @@ class Presenter():
             
             cnt += "</table>"
 
+            # This polyglot was first published by Ahmed El Sobky(@0xsobky on Twitter)
             el_sobkys_payload= utils.encode_for_html("""jaVasCript:/*-/*/*\/*'/*"/**/(/* */oNcliCk=alert() )//0A0a//</stYle/</titLe/</teXtarEa/</scRipt/-->\x3csVg/<sVg/oNloAd=alert()//>\x3e""")
             advisory_paragraph = """
             <p><strong>Exploitation advisory</strong>: If URL and parameter are
@@ -146,8 +147,44 @@ class Presenter():
             
             return cnt
         else:
-            # Future: Plain text results presentation is default.
-            return ""
+            cnt = """Format: URL | Vulnerable parameter name | Protection | Rendering Context\n"""
+            attr_pl_mention = dif_pl_mention = tag_pl_mention = False
+            for xss in discovered:
+                ctx = Consts.EMPTY_STRING
+                if "context" in xss:
+                    ctx = self.context_to_readable(xss["context"])
+                else:
+                    ctx = "-"
+                
+                cnt += """%s|%s|%s|%s""" % (
+                    xss["url"], xss["param"], xss["protection"], ctx)
+
+                if xss["protection"] == 'EncodedForHTML':
+                    tag_pl_mention = 1
+                elif xss["protection"] == 'EncodedForAttributes':
+                    attr_pl_mention = 1
+                elif xss["protection"] == 'OtherwiseModified':
+                    dif_pl_mention = 1
+            
+            el_sobkys_payload="""jaVasCript:/*-/*/*\/*'/*"/**/(/* */oNcliCk=alert() )//0A0a//</stYle/</titLe/</teXtarEa/</scRipt/-->\x3csVg/<sVg/oNloAd=alert()//>\x3e"""
+            advisory_paragraph = """Exploitation advisory: If URL and parameter are listed in the previous table with 
+protection different from 'None' then some encoding took place prior to rendering the payload. For demonstration of
+vulnerability, following payload can be used.
+<code>
+%s
+</code>""" % el_sobkys_payload
+
+
+            # If non-trivial protections were mentioned, provide advisory
+            if attr_pl_mention or dif_pl_mention or tag_pl_mention:
+                cnt += advisory_paragraph
+
+            if dif_pl_mention:
+                cnt += """When parameter is protected by OtherwiseModified type of protection, it is
+highly likely that it is vulnerable to XSS. Some of the special characters (&gt;, &lt;, ", ') were 
+not properly encoded and it is probably possible to escape the rendering context."""
+
+            return cnt
 
 
     def get_no_issues_discovered_text(self):
@@ -192,8 +229,11 @@ class Presenter():
             
             return description_lines
         else:
-            # No other presenting styles yet and introduction can be empty.
-            return Consts.EMPTY_STRING
+            return """
+An XSSFinder module takes advantage of information gathered by both SiteCopier and 
+RequestMiner modules. It looks for content supplied by the user that is reflected 
+back into the page and then determines whether the website author implemented 
+sufficient protection against XSS (typically encoding)."""
 
     def generates_media(self):
         """

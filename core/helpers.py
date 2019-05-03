@@ -36,6 +36,10 @@ class PresentationHelper():
             "BWFormal": {
                 "main": os.path.join("core", "presentation", "BWFormal", "template.htm"),
                 "part": os.path.join("core", "presentation", "BWFormal", "part.report.template.htm")
+            },
+            "Plaintext": {
+                "main": os.path.join("core", "presentation", "Plaintext", "template.txt"),
+                "part": os.path.join("core", "presentation", "Plaintext", "part.report.template.txt")
             }
         }
 
@@ -98,9 +102,8 @@ class PresentationHelper():
         """
 
         if style_type not in self.template_source:
-            # FUTURE: UX+=1, dump everything 'as is' in plaintext
-            print(" [ERROR] CAN NOT GENERATE REPORT. TEMPLATE NOT SUPPORTED")
-            return
+            style_type = 'Plaintext'
+            print(" [ERROR] Requested template is not supported. Falling back to plaintext.")
 
         # Standard processing path for HTML templates, load it, replace it,
         # and render it.
@@ -139,7 +142,13 @@ class PresentationHelper():
             final_report = self.replace_template_wildcards(template, 
             self.report_title, parts_render, target)
 
-            report_path = os.path.join("reports", cfg.CURRENT_RUN_ID + ".htm")
+            if style_type == 'BWFormal':
+                extension = '.htm'
+            else:
+                # Default to plain-text.
+                extension = '.txt'
+
+            report_path = os.path.join("reports", cfg.CURRENT_RUN_ID + extension)
             with open(report_path, 'w', errors="ignore") as f:
                 f.write(final_report)
 

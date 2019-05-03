@@ -63,14 +63,11 @@ class Presenter():
         else:
             # Plain-text default.
             return """
-            A TokenFinder modules scans source code as retrieved by SiteCopier
-            and searches for highly-entropic string sequences. High-entropy is
-            a property of a string that was generated to be as random as 
-            possible on purpose. This property is fairly common for strings 
-            that serve as private keys, access tokens and other forms of 
-            credentials that should be kept secret. This module identifies such
-            strings in responses returned by the target application.
-            """
+A TokenFinder modules scans source code as retrieved by SiteCopier and searches for highly-entropic
+string sequences. High-entropy is a property of a string that was generated to be as random as possible
+on purpose. This property is fairly common for strings that serve as private keys, access tokens and
+other forms of credentials that should be kept secret. This module identifies such strings in responses
+returned by the target application.\n"""
 
 
     def get_content(self):
@@ -133,8 +130,19 @@ class Presenter():
             cnt += "</table>"
             return cnt
         else:
-            # FUTURE: Plain-text table presentation
-            return Consts.EMPTY_STRING
+            cnt = "Format: Secret string | Instances\n"
+            
+            for secret, record in secrets.items():
+                cnt += """
+%s | (Format: URL | Line (in source code) | Entropy (Min: 1.0, Max: 8.0))\n
+""" % secret
+
+                for sr in record:
+                    cnt += """\t|->%s | %s | %s\n""" % (
+                        sr["url"], sr["line"], sr["entropy"]
+                    )
+            
+            return cnt
 
 
     def get_no_secrets_found_text(self):
